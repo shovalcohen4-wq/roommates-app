@@ -173,6 +173,10 @@ a.btn{text-decoration:none;text-align:center;display:inline-block}
 .minimap{width:100%;height:auto;max-height:220px;margin-top:8px;display:block}
 .minimap text{font-family:inherit;font-size:13px}
 .minimap g:focus-visible rect{stroke:var(--ink);stroke-width:3}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+.deal-banner{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:61;pointer-events:none;background:rgba(255,255,255,.95);color:#1b1f3b;border-radius:18px;padding:16px 26px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25);animation:dealpop .5s ease-out;max-width:calc(100% - 32px)}
+.deal-banner b{display:block;font-size:1.6rem}
+@keyframes dealpop{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -180,6 +184,7 @@ a.btn{text-decoration:none;text-align:center;display:inline-block}
 <div id="app"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="modal"></div>
+<canvas id="fx" aria-hidden="true" hidden></canvas>
 
 <script>
 /* ============================================================
@@ -420,7 +425,7 @@ function passesHard(l, p) {
 }
 function feed() {
   const p = state.prefs, shown = [], hidden = [];
-  state.listings.forEach(l => { const fail = passesHard(l, p); if (fail.length) hidden.push({ l, fail }); else shown.push({ l, s: scoreListing(l, p) }); });
+  state.listings.filter(l => !l.closed).forEach(l => { const fail = passesHard(l, p); if (fail.length) hidden.push({ l, fail }); else shown.push({ l, s: scoreListing(l, p) }); });
   shown.sort((a, b) => (b.l.premium - a.l.premium) || (b.s.total - a.s.total));
   return { shown, hidden };
 }
@@ -745,7 +750,9 @@ function tourCard(l) {
   return `<div class="card"><div class="spread"><div class="grow"><h3 style="margin:0">${role === 'tenant' ? 'המודעה שלנו: ' : ''}${esc(l.title)}</h3>
       <div class="small muted">סיור וירטואלי · ${n ? countText(n, 'חדר אחד', 'חדרים') : 'עוד לא נוצר'}</div></div>
       ${n ? `<span class="pill ${t.published ? 'ok' : 'warn'}">${t.published ? 'מפורסם' : 'טיוטה'}</span>` : ''}</div>
-    <div class="grid2" style="margin-top:10px"><a class="btn ghost" href="#/${role}/touredit/${l.listing_id}">${n ? 'עריכת הסיור' : 'יצירת סיור'}</a>${n ? `<a class="btn line" href="#/${role}/tour/${l.listing_id}">צפייה בסיור</a>` : ''}</div></div>`;
+    <div class="grid2" style="margin-top:10px"><a class="btn ghost" href="#/${role}/touredit/${l.listing_id}">${n ? 'עריכת הסיור' : 'יצירת סיור'}</a>${n ? `<a class="btn line" href="#/${role}/tour/${l.listing_id}">צפייה בסיור</a>` : ''}</div>
+    ${l.closed ? `<div class="note info" style="margin-top:10px">🎉 הושכרה ל${esc(l.closed.name)} · כניסה ${fmtDate(l.closed.start)}</div>`
+      : `<button class="btn ok block" style="margin-top:8px" data-act="dealOpen" data-id="${l.listing_id}">🤝 סגירת עסקה – שכירות חדשה</button>`}</div>`;
 }
 function viewLandlordContract() { return `<main><h2>חוזה ומסמכים</h2><h3 style="margin:0 0 8px">המודעות שלי</h3>${state.listings.filter(canEditTour).map(l => tourCard(l)).join('')}${contractCard()}<div class="card"><h3>היסטוריית תשלומים</h3><p class="small muted" style="margin:0">כל תשלומי השכירות מתועדים בלשונית "שכירות".</p></div></main>`; }
 
@@ -1264,11 +1271,79 @@ const ACTIONS = {
   chip(el) { const f = document.querySelector('form.chat-form'); if (f) { f.text.value = el.dataset.text; f.requestSubmit(); } },
   approveExp(el) { const m = state.messages.find(x => x.message_id === el.dataset.id); if (m.status !== 'pending') return; m.status = 'approved'; addExpense({ ...m.data, date: iso(TODAY) }); pushMsg('internal', 'ai', `נרשם: ${money(m.data.amount)} ב${m.data.category}. המאזן עודכן.`); render(); },
   cancelExp(el) { const m = state.messages.find(x => x.message_id === el.dataset.id); m.status = 'cancelled'; save(); render(); },
+  dealOpen(el) {
+    const l = state.listings.find(x => x.listing_id === el.dataset.id);
+    openModal(`<h2>סגירת עסקה</h2><p class="small muted" style="margin:0 0 8px">${esc(l.title)} · ${money(l.price)} לחודש</p>
+      <form data-form="deal" data-id="${l.listing_id}">
+        <label class="f" for="dname">שם השוכר/ת החדש/ה</label><input id="dname" name="name" type="text" required placeholder="למשל: נועה כהן">
+        <label class="f" for="dstart">תאריך כניסה</label><input id="dstart" name="start" type="date" value="${l.entry_date}" required>
+        <button class="btn ok block" style="margin-top:12px">חתמנו! 🎉</button>
+      </form><button class="btn line block" style="margin-top:8px" data-act="closeModal">ביטול</button>`);
+    setTimeout(() => { const i = document.getElementById('dname'); if (i) i.focus(); }, 0);
+  },
   toggleRent(el) { const r = state.rent[el.dataset.month]; r[el.dataset.id] = r[el.dataset.id] === 'paid' ? 'pending' : 'paid'; save(); render(); },
   toggleBill(el) { const b = state.bills.find(x => x.bill_id === el.dataset.id); b.status = b.status === 'paid' ? 'open' : 'paid'; save(); render(); },
   logout() { state.session = { logged: false, role: null, user_id: null, name: '' }; save(); go('login'); },
   resetDemo() { const n = state.session; state = seed(); state.session = n; save(); toast(null, 'נתוני הדמה שוחזרו.', 'איפוס'); render(); },
 };
+/* ---------- Deal celebration: fireworks + applause (no external files) ---------- */
+function celebrate(text) {
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const b = document.createElement('div'); b.className = 'deal-banner'; b.setAttribute('role', 'status');
+  b.innerHTML = `<b>🎆 נסגרה עסקה! 👏</b><span class="small">${esc(text)}</span>`;
+  document.body.appendChild(b); setTimeout(() => b.remove(), 4500);
+  playApplause(4);
+  if (!reduce) fireworks(4200);
+}
+function fireworks(ms) {
+  const c = document.getElementById('fx'); if (!c || !c.getContext) return;
+  const ctx = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  const W = c.width = innerWidth * dpr, H = c.height = innerHeight * dpr; c.hidden = false;
+  const COLORS = ['#ff5252', '#ffd740', '#69f0ae', '#40c4ff', '#e040fb', '#ff9100', '#ffffff'];
+  const rockets = [], sparks = [], end = performance.now() + ms; let next = 0;
+  const launch = () => rockets.push({ x: W * (.15 + Math.random() * .7), y: H, vy: -(H * (.016 + Math.random() * .006)), ty: H * (.15 + Math.random() * .3), col: COLORS[Math.random() * COLORS.length | 0] });
+  const burst = r => { const n = 60 + (Math.random() * 40 | 0), sp = 3 + Math.random() * 3;
+    for (let i = 0; i < n; i++) { const a = Math.PI * 2 * i / n, v = sp * (.5 + Math.random() * .5) * dpr; sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, col: Math.random() < .2 ? '#fff' : r.col }); } };
+  (function frame(t) {
+    if (t < end && t > next) { launch(); if (Math.random() < .4) launch(); next = t + 280 + Math.random() * 320; }
+    ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = rockets.length - 1; i >= 0; i--) { const r = rockets[i]; r.y += r.vy; r.vy *= .985;
+      ctx.fillStyle = r.col; ctx.beginPath(); ctx.arc(r.x, r.y, 2.5 * dpr, 0, 7); ctx.fill();
+      if (r.y <= r.ty || r.vy > -1) { burst(r); rockets.splice(i, 1); } }
+    for (let i = sparks.length - 1; i >= 0; i--) { const p = sparks[i]; p.x += p.vx; p.y += p.vy; p.vx *= .97; p.vy = p.vy * .97 + .06 * dpr; p.life -= .014;
+      if (p.life <= 0) { sparks.splice(i, 1); continue; }
+      ctx.globalAlpha = p.life; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, 2 * dpr, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    if (t < end || rockets.length || sparks.length) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, W, H); c.hidden = true; }
+  })(performance.now());
+}
+let audioCtx = null;
+function playApplause(sec) {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    audioCtx = audioCtx || new AC(); if (audioCtx.state === 'suspended') audioCtx.resume();
+    const sr = audioCtx.sampleRate, len = Math.floor(sr * sec), buf = audioCtx.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      // a crowd of clappers: each clap is a short burst of decaying noise; the crowd swells in, then fades out
+      for (let k = 0; k < 18; k++) {
+        let t = Math.random() * .25; const rate = 3.2 + Math.random() * 2.2, gain = .25 + Math.random() * .35;
+        while (t < sec - .05) {
+          const env = Math.min(1, t / .5) * Math.min(1, (sec - t) / 1.4);
+          const s0 = Math.floor(t * sr), n = Math.floor(sr * (.012 + Math.random() * .01));
+          for (let i = 0; i < n && s0 + i < len; i++) d[s0 + i] += (Math.random() * 2 - 1) * gain * env * Math.exp(-i / (n / 4));
+          t += 1 / rate * (.8 + Math.random() * .4);
+        }
+      }
+    }
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = .6;
+    const g = audioCtx.createGain(); g.gain.value = .5;
+    src.connect(bp).connect(g).connect(audioCtx.destination); src.start();
+  } catch (e) { /* audio blocked: the fireworks still play */ }
+}
+
 const FORMS = {
   async tourAdd(f, fd) {
     const lid = f.dataset.id, file = fd.get('file'), name = (fd.get('name') || '').trim();
@@ -1294,6 +1369,14 @@ const FORMS = {
   async issue(f, fd) {
     state.issues.unshift({ issue_id: newId('i'), apartment_id: apt().apartment_id, reported_by_user_id: me(), title: fd.get('title').trim(), description: fd.get('description').trim(), image: await readFile(fd.get('image')), status: 'Open', receipt_url: null, date: iso(TODAY) });
     save(); toast(null, 'הדיווח נשלח למשכירה ומופיע אצלה בלשונית התקלות.', 'תקלה דווחה'); render();
+  },
+  deal(f, fd) {
+    const l = state.listings.find(x => x.listing_id === f.dataset.id); if (!l || l.closed) return;
+    const name = fd.get('name').trim(); if (!name) return;
+    l.closed = { name, start: fd.get('start') || l.entry_date, date: iso(TODAY) };
+    save(); closeModal(); render();
+    celebrate(`${l.title} הושכרה ל${name}`);
+    toast(null, 'המודעה הוסרה מפיד המחפשים.', 'העסקה נסגרה');
   },
   async bill(f, fd) {
     state.bills.unshift({ bill_id: newId('b'), apartment_id: apt().apartment_id, title: fd.get('title').trim(), amount: parseFloat(fd.get('amount')), due_date: fd.get('due'), file: await readFile(fd.get('file')), status: 'open' });
