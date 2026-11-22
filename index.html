@@ -174,7 +174,7 @@ a.btn{text-decoration:none;text-align:center;display:inline-block}
 .minimap text{font-family:inherit;font-size:13px}
 .minimap g:focus-visible rect{stroke:var(--ink);stroke-width:3}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
-.deal-banner{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:61;pointer-events:none;background:rgba(255,255,255,.95);color:#1b1f3b;border-radius:18px;padding:16px 26px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25);animation:dealpop .5s ease-out;max-width:calc(100% - 32px)}
+.deal-banner{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:61;pointer-events:none;background:rgba(255,255,255,.95);color:#1b1f3b;border-radius:18px;padding:16px 26px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25);animation:dealpop .5s ease-out;width:max-content;max-width:calc(100% - 32px)}
 .deal-banner b{display:block;font-size:1.6rem}
 @keyframes dealpop{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -1289,23 +1289,27 @@ const ACTIONS = {
 /* ---------- Deal celebration: fireworks + applause (no external files) ---------- */
 function celebrate(text) {
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.deal-banner').forEach(x => x.remove());
   const b = document.createElement('div'); b.className = 'deal-banner'; b.setAttribute('role', 'status');
   b.innerHTML = `<b>🎆 נסגרה עסקה! 👏</b><span class="small">${esc(text)}</span>`;
   document.body.appendChild(b); setTimeout(() => b.remove(), 4500);
   playApplause(4);
   if (!reduce) fireworks(4200);
 }
+let fxEnd = 0, fxRunning = false;
 function fireworks(ms) {
+  // a show already running just gets longer, so two quick deals never fight over the canvas
+  fxEnd = Math.max(fxEnd, performance.now() + ms); if (fxRunning) return;
   const c = document.getElementById('fx'); if (!c || !c.getContext) return;
   const ctx = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
-  const W = c.width = innerWidth * dpr, H = c.height = innerHeight * dpr; c.hidden = false;
+  const W = c.width = innerWidth * dpr, H = c.height = innerHeight * dpr; c.hidden = false; fxRunning = true;
   const COLORS = ['#ff5252', '#ffd740', '#69f0ae', '#40c4ff', '#e040fb', '#ff9100', '#ffffff'];
-  const rockets = [], sparks = [], end = performance.now() + ms; let next = 0;
+  const rockets = [], sparks = []; let next = 0;
   const launch = () => rockets.push({ x: W * (.15 + Math.random() * .7), y: H, vy: -(H * (.016 + Math.random() * .006)), ty: H * (.15 + Math.random() * .3), col: COLORS[Math.random() * COLORS.length | 0] });
   const burst = r => { const n = 60 + (Math.random() * 40 | 0), sp = 3 + Math.random() * 3;
     for (let i = 0; i < n; i++) { const a = Math.PI * 2 * i / n, v = sp * (.5 + Math.random() * .5) * dpr; sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, col: Math.random() < .2 ? '#fff' : r.col }); } };
   (function frame(t) {
-    if (t < end && t > next) { launch(); if (Math.random() < .4) launch(); next = t + 280 + Math.random() * 320; }
+    if (t < fxEnd && t > next) { launch(); if (Math.random() < .4) launch(); next = t + 280 + Math.random() * 320; }
     ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';
     for (let i = rockets.length - 1; i >= 0; i--) { const r = rockets[i]; r.y += r.vy; r.vy *= .985;
@@ -1315,7 +1319,7 @@ function fireworks(ms) {
       if (p.life <= 0) { sparks.splice(i, 1); continue; }
       ctx.globalAlpha = p.life; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, 2 * dpr, 0, 7); ctx.fill(); }
     ctx.globalAlpha = 1;
-    if (t < end || rockets.length || sparks.length) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, W, H); c.hidden = true; }
+    if (t < fxEnd || rockets.length || sparks.length) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, W, H); c.hidden = true; fxRunning = false; }
   })(performance.now());
 }
 let audioCtx = null;
