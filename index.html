@@ -85,6 +85,22 @@ details[open] summary::before{content:"－ "}
 .steps span{flex:1;height:6px;border-radius:99px;background:var(--line)}
 .steps span.on{background:var(--brand)}
 .steps.closed span.on{background:var(--ok)}
+/* apartment meter */
+.meter-scene{width:100%;height:auto;display:block;border-radius:12px;overflow:hidden}
+.meter-scene .pop{transform-box:fill-box;transform-origin:50% 100%;animation:pop .8s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:none}}
+.meter-scene .bulb{animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.35}}
+.meter-bar{height:12px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}
+.meter-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ok),var(--brand))}
+.meter-bar i.anim{animation:fill .9s ease-out}
+@keyframes fill{from{width:var(--from,0%)}}
+.meter.lvlup{animation:glow 1.8s ease-out}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(43,138,62,.55)}100%{box-shadow:0 0 0 20px rgba(43,138,62,0)}}
+.meter-levels{display:flex;gap:4px;margin-top:10px}
+.meter-levels span{flex:1;height:6px;border-radius:99px;background:var(--line)}
+.meter-levels span.on{background:var(--ok)}
+.mates{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 /* chat */
 .chat{display:flex;flex-direction:column;height:calc(100vh - 230px);min-height:360px}
 .chat-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px 10px}
@@ -382,6 +398,78 @@ function remind(when) {
   pending.forEach(t => toast('tasks', `${t.assigned_to_user_id ? user(t.assigned_to_user_id).name + ': ' : 'לא משובץ: '}${t.title}${when === 'evening' ? ' – עדיין לא סומנה כבוצעה' : ''}`, when === 'morning' ? '🔔 תזכורת בוקר' : '🔔 תזכורת ערב (שנייה)'));
 }
 
+/* ---------- apartment meter ----------
+   Every completed task is worth METER_PTS. The apartment moves up a level only when
+   the stage's points are collected AND every tenant completed at least one task in
+   that stage, so the upgrade is a team effort. Derived from tasks on every render. */
+const METER_PTS = 10;
+const METER_LEVELS = [
+  { name: 'דירה ריקה', label: '' },
+  { name: 'מתחילים להתבסס', label: 'עציץ ירוק' },
+  { name: 'פינה מוארת', label: 'מנורה עומדת' },
+  { name: 'סלון מזמין', label: 'ספה' },
+  { name: 'בית עם אופי', label: 'תמונה ושטיח' },
+  { name: 'ערב סרט', label: 'טלוויזיה' },
+  { name: 'אווירה חמימה', label: 'שרשרת אורות' },
+  { name: 'דירת החלומות', label: 'חתול דירה ולילה מכוכב' },
+];
+const meterNeed = level => tenants().length * METER_PTS + METER_PTS * (level - 1);
+let meterFx = null; // one-shot animation hint for the next render
+function apartmentMeter() {
+  const ids = tenants().map(u => u.user_id);
+  const when = t => t.done_at || t.due_date;
+  const done = state.tasks.filter(t => t.status === 'Done').sort((a, b) => when(a).localeCompare(when(b)));
+  let level = 1, pts = 0, by = new Set();
+  const total = {};
+  for (const t of done) {
+    const who = t.done_by || t.assigned_to_user_id;
+    pts += METER_PTS;
+    if (who) { by.add(who); total[who] = (total[who] || 0) + 1; }
+    if (level < METER_LEVELS.length && pts >= meterNeed(level) && ids.every(id => by.has(id))) { pts -= meterNeed(level); level++; by = new Set(); }
+  }
+  const max = level >= METER_LEVELS.length, need = max ? 0 : meterNeed(level);
+  return { level, pts, need, max, by, total, pct: max ? 100 : Math.min(100, (pts / need) * 100), missing: max ? [] : ids.filter(id => !by.has(id)) };
+}
+function meterScene(level, pop) {
+  const g = (n, body) => level >= n ? `<g${n === pop ? ' class="pop"' : ''}>${body}</g>` : '';
+  const walls = ['#e9ecef', '#e7eef7', '#e3f0ea', '#fdf1dc', '#fde6cf', '#f9e1e8', '#efe3fb', '#ffe8c2'];
+  const night = level >= METER_LEVELS.length;
+  const bulbs = [[44.5, 12.9], [83, 15.5], [121.5, 13.9], [160, 8], [198.5, 13.9], [237, 15.5], [275.5, 12.9]]
+    .map(([x, y], i) => `<circle class="bulb" cx="${x}" cy="${y + 3.5}" r="3.2" fill="${['#ffd43b', '#ff8787', '#69db7c', '#74c0fc'][i % 4]}" style="animation-delay:${i * .3}s"/>`).join('');
+  return `<svg class="meter-scene" viewBox="0 0 320 160" role="img" aria-label="איור הדירה ברמה ${level}: ${esc(METER_LEVELS[level - 1].name)}">
+    <rect width="320" height="122" fill="${walls[level - 1]}"/>
+    <rect y="120" width="320" height="40" fill="#cfb491"/><rect y="120" width="320" height="3" fill="#b89a74"/>
+    ${g(5, '<ellipse cx="160" cy="141" rx="80" ry="11" fill="#e64980" opacity=".5"/>')}
+    <rect x="130" y="22" width="60" height="48" rx="3" fill="${night ? '#2b2f5c' : '#bfe3ff'}" stroke="#fff" stroke-width="4"/>
+    ${night ? '<circle cx="177" cy="33" r="5" fill="#fff3bf"/><circle cx="141" cy="31" r="1.6" fill="#ffd43b"/><circle cx="150" cy="58" r="1.4" fill="#ffd43b"/><circle cx="172" cy="60" r="1.6" fill="#ffd43b"/>' : '<circle cx="177" cy="34" r="6" fill="#ffd43b"/>'}
+    <path d="M160 22v48M130 46h60" stroke="#fff" stroke-width="3"/>
+    ${g(7, `<path d="M6 6Q83 24 160 8Q237 24 314 6" stroke="#868e96" stroke-width="1.5" fill="none"/>${bulbs}`)}
+    ${g(5, '<rect x="232" y="30" width="44" height="34" rx="2" fill="#fff" stroke="#862e9c" stroke-width="3"/><path d="M236 60l12-14 9 9 6-6 10 11z" fill="#74c0fc"/><circle cx="266" cy="40" r="4" fill="#fab005"/>')}
+    ${g(3, '<circle cx="296" cy="54" r="26" fill="#ffe066" opacity=".35"/><path d="M296 60v58M284 120h24" stroke="#495057" stroke-width="3" stroke-linecap="round"/><path d="M282 60l6-20h16l6 20z" fill="#ffd43b"/>')}
+    ${g(2, '<path d="M14 120l4-22h20l4 22z" fill="#c0703a"/><ellipse cx="22" cy="86" rx="7" ry="14" fill="#2f9e44" transform="rotate(-25 22 86)"/><ellipse cx="34" cy="85" rx="7" ry="15" fill="#37b24d" transform="rotate(20 34 85)"/><ellipse cx="28" cy="80" rx="6" ry="16" fill="#40c057"/>')}
+    ${g(6, '<rect x="46" y="104" width="44" height="16" rx="2" fill="#8d6e63"/><path d="M68 100v4" stroke="#212529" stroke-width="3"/><rect x="47" y="72" width="42" height="28" rx="3" fill="#212529"/><rect x="50" y="75" width="36" height="22" fill="#4dabf7"/>')}
+    ${g(4, '<rect x="104" y="84" width="112" height="22" rx="8" fill="#4c6ef5"/><rect x="98" y="96" width="124" height="20" rx="6" fill="#3b5bdb"/><rect x="94" y="92" width="14" height="26" rx="6" fill="#364fc7"/><rect x="212" y="92" width="14" height="26" rx="6" fill="#364fc7"/><path d="M104 118v4M216 118v4" stroke="#212529" stroke-width="3"/>')}
+    ${g(8, '<ellipse cx="190" cy="138" rx="16" ry="8" fill="#495057"/><circle cx="174" cy="131" r="7" fill="#495057"/><path d="M168 127l1-9 5 5zM176 124l5-6v9z" fill="#495057"/><path d="M205 139q11-2 8-13" stroke="#495057" stroke-width="3" fill="none" stroke-linecap="round"/>')}
+  </svg>`;
+}
+function meterCard() {
+  const m = apartmentMeter(), fx = meterFx;
+  const names = ids => ids.map(id => esc(user(id).name)).join(', ');
+  const status = m.max ? 'הגעתם לרמה המקסימלית. דירת החלומות שלכם! 🏆'
+    : m.pts >= m.need ? `הנקודות נאספו! הדירה תשתדרג כש${names(m.missing)} ${m.missing.length > 1 ? 'ישלימו' : 'ישלים/תשלים'} משימה.`
+    : `עוד ${m.need - m.pts} נק׳ לשדרוג${m.missing.length ? ` · מחכים גם למשימה מ: ${names(m.missing)}` : ' · כל השותפים כבר תרמו בשלב הזה ✓'}`;
+  return `<div class="card meter ${fx && fx.up ? 'lvlup' : ''}">
+    <div class="spread"><h3 style="margin:0">מד הדירה</h3><span class="pill ok">רמה ${m.level}/${METER_LEVELS.length}</span></div>
+    <p class="small muted" style="margin:2px 0 8px"><b>${esc(METER_LEVELS[m.level - 1].name)}</b> · כל משימה שבוצעה = ${METER_PTS} נק׳. הדירה משתדרגת רק כשכל השותפים תורמים.</p>
+    ${meterScene(m.level, fx && fx.up ? m.level : 0)}
+    <div class="spread small" style="margin-top:10px"><b>${m.max ? 'כל השדרוגים נפתחו' : 'השדרוג הבא: ' + esc(METER_LEVELS[m.level].label)}</b>${m.max ? '' : `<span class="muted">${Math.min(m.pts, m.need)}/${m.need} נק׳</span>`}</div>
+    <div class="meter-bar" role="progressbar" aria-label="התקדמות לשדרוג הבא" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(m.pct)}"><i class="${fx ? 'anim' : ''}" style="width:${m.pct}%;--from:${fx ? fx.from : m.pct}%"></i></div>
+    <div class="mates">${tenants().map(u => { const ok = m.max || m.by.has(u.user_id); return `<span class="pill ${ok ? 'ok' : 'gray'}" title="${m.total[u.user_id] || 0} משימות בסך הכול">${ok ? '✓' : '⏳'} ${esc(u.name)}</span>`; }).join('')}</div>
+    <p class="small" style="margin:8px 0 0">${status}</p>
+    <div class="meter-levels" aria-hidden="true">${METER_LEVELS.map((_, i) => `<span class="${i < m.level ? 'on' : ''}"></span>`).join('')}</div>
+  </div>`;
+}
+
 /* ---------- issues ---------- */
 const ISSUE_STATUS = { Open: ['פתוח', 'danger'], In_Progress: ['בטיפול', 'warn'], Technician: ['נשלח בעל מקצוע', 'warn'], Closed: ['טופל', 'ok'] };
 const ISSUE_ORDER = ['Open', 'In_Progress', 'Technician', 'Closed'];
@@ -452,7 +540,8 @@ function internalAgent(text) {
   if (/(משימ|תורנ|מה פתוח|מה נשאר|מטל)/.test(text)) {
     const p = state.tasks.filter(t => t.status === 'Pending' && t.due_date <= iso(TODAY));
     const done = state.tasks.filter(t => t.status === 'Done').length;
-    return { kind: 'text', content: p.length ? `פתוח להיום: ${p.map(t => `${t.title} (${t.assigned_to_user_id ? user(t.assigned_to_user_id).name : 'לא משובץ'})`).join(', ')}. סה״כ ${done} משימות בוצעו.` : 'אין משימות פתוחות להיום. כל הכבוד!' };
+    const lvl = apartmentMeter().level;
+    return { kind: 'text', content: (p.length ? `פתוח להיום: ${p.map(t => `${t.title} (${t.assigned_to_user_id ? user(t.assigned_to_user_id).name : 'לא משובץ'})`).join(', ')}. סה״כ ${done} משימות בוצעו.` : 'אין משימות פתוחות להיום. כל הכבוד!') + ` מד הדירה ברמה ${lvl}/${METER_LEVELS.length}.` };
   }
   if (/(מאזן|חייב|קיזוז|כמה אני|מי מעביר)/.test(text)) {
     const b = balance();
@@ -593,6 +682,7 @@ function viewTenantTasks() {
   const doneToday = today.filter(t => t.status === 'Done').length;
   return `<main>
     <h2>משימות ותורנויות</h2>
+    ${meterCard()}
     <div class="card">
       <div class="seg"><button class="${auto ? 'on' : ''}" data-act="taskMode" data-mode="Auto">סבב אוטומטי</button><button class="${auto ? '' : 'on'}" data-act="taskMode" data-mode="Free">בחירה חופשית</button></div>
       <p class="small muted" style="margin:10px 0">${auto ? 'המשימות הפתוחות משובצות בסבב (Round-Robin) בין כל השותפים.' : 'כל אחד בוחר משימות פנויות ומשבץ את עצמו.'}</p>
@@ -1213,6 +1303,7 @@ function render() {
   const keepScroll = render.lastRoute === route ? window.scrollY : 0;
   document.getElementById('app').innerHTML = html;
   render.lastRoute = route;
+  meterFx = null;
   window.scrollTo(0, keepScroll);
   const log = document.getElementById('chatlog');
   if (log) log.scrollTop = log.scrollHeight;
@@ -1265,7 +1356,15 @@ const ACTIONS = {
   },
   roundRobin() { roundRobin(); render(); },
   remind(el) { remind(el.dataset.when); },
-  toggleTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.status = t.status === 'Done' ? 'Pending' : 'Done'; save(); render(); },
+  toggleTask(el) {
+    const t = state.tasks.find(x => x.task_id === el.dataset.id), before = apartmentMeter();
+    if (t.status === 'Done') { t.status = 'Pending'; delete t.done_by; delete t.done_at; }
+    else { t.status = 'Done'; t.done_by = t.assigned_to_user_id || me(); t.done_at = new Date().toISOString(); }
+    const after = apartmentMeter(), up = after.level > before.level;
+    meterFx = { up, from: after.level === before.level ? before.pct : up ? 0 : 100 };
+    if (up) toast(null, `נפתח שדרוג: ${METER_LEVELS[after.level - 1].label}. כל הכבוד לכל השותפים!`, `🎉 הדירה עלתה לרמה ${after.level}`);
+    save(); render();
+  },
   claimTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.assigned_to_user_id = me(); save(); render(); },
   releaseTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.assigned_to_user_id = null; save(); render(); },
   chip(el) { const f = document.querySelector('form.chat-form'); if (f) { f.text.value = el.dataset.text; f.requestSubmit(); } },
