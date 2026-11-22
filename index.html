@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אפליקציית שותפים – אב-טיפוס</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f4f8; --card:#ffffff; --ink:#1b2232; --muted:#667085; --line:#e3e7ef;
+  --brand:#3b5bdb; --brand-ink:#ffffff; --brand-soft:#e8edff;
+  --ok:#2b8a3e; --ok-soft:#e6f6ea; --warn:#d9480f; --warn-soft:#fff0e6;
+  --danger:#c92a2a; --danger-soft:#ffe9e9; --ai:#6741d9; --ai-soft:#f1ecff;
+  --radius:16px; --shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#dfe4ee;color:var(--ink);font-family:"Rubik",system-ui,sans-serif;font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:84px;box-shadow:0 0 40px rgba(0,0,0,.08)}
+header.top{position:sticky;top:0;z-index:20;background:var(--brand);color:var(--brand-ink);padding:12px 16px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header.top h1{font-size:18px;margin:0;font-weight:700;flex:1;min-width:0}
+.demo-badge{font-size:11px;background:rgba(255,255,255,.18);padding:2px 8px;border-radius:99px;white-space:nowrap}
+header.top select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:4px 6px;font-size:13px}
+header.top select option{color:var(--ink)}
+.icon-btn{background:none;border:0;color:inherit;cursor:pointer;padding:4px;display:inline-flex;border-radius:10px}
+.icon-btn:hover{background:rgba(255,255,255,.15)}
+main{padding:16px}
+h2{font-size:20px;margin:4px 0 12px}
+h3{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer;background:var(--brand);color:var(--brand-ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:var(--brand-soft);color:var(--brand)}
+.btn.line{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input[type=text],input[type=number],input[type=date],input[type=email],input[type=password],select.in,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+textarea{resize:vertical;min-height:70px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--brand-soft);color:var(--brand);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.danger{background:var(--danger-soft);color:var(--danger)}
+.pill.ai{background:var(--ai-soft);color:var(--ai)}
+.pill.gray{background:#eef0f4;color:var(--muted)}
+.list{list-style:none;margin:0;padding:0}
+.list li{padding:10px 0;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat div{background:var(--bg);border-radius:12px;padding:8px 4px}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:12px;color:var(--muted)}
+.pos{color:var(--ok)} .neg{color:var(--danger)}
+.transfer{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:12px;margin-top:6px}
+.transfer .arrow{color:var(--muted)}
+.thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
+.note{font-size:13px;background:var(--warn-soft);color:#8a3a0a;border-radius:12px;padding:8px 12px;margin-bottom:12px}
+.note.info{background:var(--brand-soft);color:#24398f}
+details summary{cursor:pointer;font-weight:600;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"＋ ";color:var(--brand)}
+details[open] summary::before{content:"－ "}
+.seg{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:none;padding:8px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--brand);box-shadow:var(--shadow)}
+.task{display:flex;gap:10px;align-items:center}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:#fff;cursor:pointer;flex:none;display:grid;place-items:center;color:#fff}
+.check.on{background:var(--ok);border-color:var(--ok)}
+.task.done .t-title{text-decoration:line-through;color:var(--muted)}
+.steps{display:flex;gap:4px;margin-top:8px}
+.steps span{flex:1;height:6px;border-radius:99px;background:var(--line)}
+.steps span.on{background:var(--brand)}
+.steps.closed span.on{background:var(--ok)}
+/* chat */
+.chat{display:flex;flex-direction:column;height:calc(100vh - 230px);min-height:360px}
+.chat-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px 10px}
+.msg{max-width:82%;padding:8px 12px;border-radius:14px;background:#fff;box-shadow:var(--shadow);align-self:flex-end}
+.msg.me{align-self:flex-start;background:var(--brand);color:#fff}
+.msg.ai{background:var(--ai-soft);color:#2c1a6b;box-shadow:none;border:1px solid #e0d6ff}
+.msg .who{font-size:11px;font-weight:600;opacity:.75;margin-bottom:2px}
+.msg .time{font-size:10px;opacity:.6;margin-top:2px}
+.msg.sys{align-self:center;background:transparent;box-shadow:none;color:var(--muted);font-size:12px;text-align:center}
+.proposal{border:1px dashed var(--ai);border-radius:12px;padding:10px;background:#fff;margin-top:6px;color:var(--ink)}
+.chat-form{display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--line)}
+.chat-form input{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:4px 10px;font-size:12px;cursor:pointer}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+/* listing */
+.listing .score{font-size:22px;font-weight:700;color:var(--brand)}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--brand)}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+/* toggle */
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#cfd5e1;border-radius:99px;transition:.2s;cursor:pointer}
+.switch span::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.switch input:checked+span{background:var(--brand)}
+.switch input:checked+span::after{right:23px}
+.switch input:focus-visible+span{outline:2px solid var(--brand)}
+/* nav */
+nav.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+nav.bottom a{flex:1;text-align:center;padding:8px 2px 10px;color:var(--muted);text-decoration:none;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.bottom a.on{color:var(--brand);font-weight:600}
+nav.bottom svg{width:22px;height:22px}
+/* modal & toast */
+.overlay{position:fixed;inset:0;background:rgba(20,26,40,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:min(430px,100%);max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px 16px 24px}
+.toasts{position:fixed;top:70px;left:50%;transform:translateX(-50%);width:min(400px,calc(100% - 32px));z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#1b2232;color:#fff;border-radius:14px;padding:10px 14px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:tin .25s ease-out}
+.toast b{display:block;font-size:12px;opacity:.7;font-weight:500}
+@keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1}}
+/* auth */
+.hero{padding:40px 8px 20px;text-align:center}
+.hero .logo{width:64px;height:64px;border-radius:20px;background:var(--brand);display:inline-grid;place-items:center;color:#fff;margin-bottom:12px}
+.role-card{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:right;background:#fff;border:2px solid transparent;border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;box-shadow:var(--shadow)}
+.role-card:hover{border-color:var(--brand)}
+.role-card .ic{width:44px;height:44px;border-radius:12px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+.role-card.soon{opacity:.95}
+kbd{font-family:inherit;background:var(--bg);padding:0 6px;border-radius:6px}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0}
+dl.kv dt{color:var(--muted);font-size:13px}
+dl.kv dd{margin:0;font-weight:500}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modal"></div>
+
+<script>
+/* ============================================================
+   אב-טיפוס לחיץ – אפליקציית שותפים, דירות ומשכירים
+   כל הנתונים הם נתוני דמה ונשמרים בדפדפן בלבד.
+   מודל הנתונים תואם ל-ERD במסמך האפיון.
+   ============================================================ */
+const KEY = 'roommates-prototype-v1';
+const TODAY = new Date();
+const iso = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+const addDays = (n, from = TODAY) => { const d = new Date(from); d.setDate(d.getDate() + n); return iso(d); };
+const monthKey = (d = TODAY) => iso(d).slice(0, 7);
+const prevMonthKey = (n) => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - n, 15); return monthKey(d); };
+const firstOfMonth = iso(new Date(TODAY.getFullYear(), TODAY.getMonth(), 1));
+let uid = Date.now();
+const newId = p => p + (uid++).toString(36);
+
+function seed() {
+  const users = [
+    { user_id: 't1', name: 'נועה', email: 'noa@demo', phone: '050-0000001', role: 'Tenant', preferences_json: {} },
+    { user_id: 't2', name: 'איתי', email: 'itay@demo', phone: '050-0000002', role: 'Tenant', preferences_json: {} },
+    { user_id: 't3', name: 'מאיה', email: 'maya@demo', phone: '050-0000003', role: 'Tenant', preferences_json: {} },
+    { user_id: 'l1', name: 'רונית', email: 'ronit@demo', phone: '050-0000010', role: 'Landlord', preferences_json: {} },
+    { user_id: 's1', name: 'עמית', email: 'amit@demo', phone: '050-0000020', role: 'Seeker', preferences_json: {} },
+  ];
+  const apt = 'a1';
+  const exp = (by, amount, category, description, d) => ({ expense_id: newId('e'), apartment_id: apt, created_by_user_id: by, amount, category, description, receipt_url: null, billing_period: 1, is_cleared: false, date: d });
+  return {
+    v: 1,
+    session: { logged: false, role: null, user_id: null, name: '' },
+    users,
+    apartments: [{ apartment_id: apt, address: 'רחוב הדוגמה 12, תל אביב', landlord_id: 'l1', rent_amount: 7200, contract_url: '#', rules_json: { rules: ['ללא עישון בתוך הדירה', 'חיות מחמד באישור המשכירה', 'שקט אחרי 23:00'] }, contract: { start: '2026-09-01', end: '2027-08-31', deposit: 'ערבות בנקאית (דמה)' } }],
+    period: { id: 1, start: firstOfMonth },
+    expenses: [
+      exp('t1', 186.5, 'מזון וקניות', 'קניות סופר שבועיות', addDays(-12)),
+      exp('t2', 64, 'חומרי ניקוי', 'אקונומיקה, ספוגים ונוזל כלים', addDays(-9)),
+      exp('t3', 120, 'ציוד לבית', 'מגבות מטבח וקולב', addDays(-4)),
+      exp('t1', 42, 'מזון וקניות', 'חלב, לחם וקפה', addDays(-2)),
+    ],
+    history: [
+      { period_id: 0, start: prevMonthKey(1) + '-01', end: prevMonthKey(1) + '-31', total: 612, kind: 'monthly', transfers: [{ from: 't3', to: 't1', amount: 84 }, { from: 't2', to: 't1', amount: 32 }] },
+    ],
+    taskMode: 'Auto', rrIndex: 0,
+    tasks: [
+      { task_id: 'k1', apartment_id: apt, assigned_to_user_id: 't1', title: 'שטיפת רצפה', due_date: iso(TODAY), status: 'Pending', mode: 'Auto' },
+      { task_id: 'k2', apartment_id: apt, assigned_to_user_id: 't2', title: 'הוצאת זבל ומחזור', due_date: iso(TODAY), status: 'Pending', mode: 'Auto' },
+      { task_id: 'k3', apartment_id: apt, assigned_to_user_id: 't3', title: 'ניקוי מטבח', due_date: addDays(1), status: 'Pending', mode: 'Auto' },
+      { task_id: 'k4', apartment_id: apt, assigned_to_user_id: 't1', title: 'ניקוי שירותים ומקלחת', due_date: addDays(3), status: 'Pending', mode: 'Auto' },
+      { task_id: 'k5', apartment_id: apt, assigned_to_user_id: 't2', title: 'השקיית עציצים', due_date: addDays(-1), status: 'Done', mode: 'Auto' },
+    ],
+    issues: [
+      { issue_id: 'i1', apartment_id: apt, reported_by_user_id: 't2', title: 'נזילה מתחת לכיור במטבח', description: 'מטפטף כל הזמן, שמנו דלי בינתיים.', image: null, status: 'Technician', receipt_url: null, date: addDays(-5) },
+      { issue_id: 'i2', apartment_id: apt, reported_by_user_id: 't3', title: 'נורה שרופה בחדר המדרגות', description: '', image: null, status: 'Closed', receipt_url: null, date: addDays(-20) },
+    ],
+    rent: {
+      [monthKey()]: { t1: 'paid', t2: 'pending', t3: 'paid' },
+      [prevMonthKey(1)]: { t1: 'paid', t2: 'paid', t3: 'paid' },
+      [prevMonthKey(2)]: { t1: 'paid', t2: 'paid', t3: 'paid' },
+    },
+    bills: [
+      { bill_id: 'b1', apartment_id: apt, title: 'חשבון מים – חודשיים אחרונים', amount: 340, due_date: addDays(10), file: null, status: 'open' },
+    ],
+    listings: [
+      { listing_id: 'L1', apartment_id: 'a9', publisher_type: 'Landlord', publisher_id: 'l1', publisher_name: 'רונית (משכירה)', title: 'דירת 3 חדרים שלמה, משופצת', area: 'תל אביב', price: 7800, rooms: 3, entry_date: addDays(9), premium: true,
+        hard_constraints_json: { smoking: false, pets: true, parking: true }, soft_constraints_json: { price: 7800, entry_date: addDays(9) },
+        public_info: { extras: 'ארנונה וועד בית אינם כלולים במחיר.', furniture: 'מרוהטת חלקית: מקרר, מכונת כביסה וארונות.', roommates: 'הדירה מושכרת בשלמותה.', floor: 'קומה 2 עם מעלית.' } },
+      { listing_id: 'L2', apartment_id: 'a1', publisher_type: 'Tenants', publisher_id: 't1', publisher_name: 'שוכרי הדירה', title: 'חדר פנוי בדירת 4 שותפים', area: 'תל אביב', price: 2900, rooms: 1, entry_date: addDays(23), premium: false,
+        hard_constraints_json: { smoking: false, pets: false, parking: false }, soft_constraints_json: { price: 2900, entry_date: addDays(23) },
+        public_info: { extras: 'חשבונות שוטפים מתחלקים שווה בשווה דרך האפליקציה.', furniture: 'החדר מגיע עם מיטה וארון.', roommates: '3 שותפים, סטודנטים ועובדים, אווירה רגועה.', floor: 'קומה 3 בלי מעלית.' } },
+      { listing_id: 'L3', apartment_id: 'a8', publisher_type: 'Tenants', publisher_id: null, publisher_name: 'שוכרי הדירה', title: 'חדר עם מרפסת, קרוב לרכבת', area: 'רמת גן', price: 2500, rooms: 1, entry_date: addDays(40), premium: false,
+        hard_constraints_json: { smoking: true, pets: true, parking: false }, soft_constraints_json: { price: 2500, entry_date: addDays(40) },
+        public_info: { extras: 'ארנונה מתחלקת בין השותפים.', furniture: 'החדר ריק.', roommates: '2 שותפים.', floor: 'קומת קרקע.' } },
+      { listing_id: 'L4', apartment_id: 'a7', publisher_type: 'Landlord', publisher_id: 'l1', publisher_name: 'רונית (משכירה)', title: 'דירת 2 חדרים שקטה', area: 'גבעתיים', price: 5200, rooms: 2, entry_date: addDays(45), premium: false,
+        hard_constraints_json: { smoking: false, pets: false, parking: true }, soft_constraints_json: { price: 5200, entry_date: addDays(45) },
+        public_info: { extras: 'ועד בית כלול במחיר.', furniture: 'לא מרוהטת.', roommates: 'הדירה מושכרת בשלמותה.', floor: 'קומה 4 עם מעלית.' } },
+      { listing_id: 'L5', apartment_id: 'a6', publisher_type: 'Tenants', publisher_id: null, publisher_name: 'שוכרי הדירה', title: 'חדר מרווח בדירת 3 שותפים', area: 'תל אביב', price: 3400, rooms: 1, entry_date: addDays(10), premium: false,
+        hard_constraints_json: { smoking: false, pets: true, parking: false }, soft_constraints_json: { price: 3400, entry_date: addDays(10) },
+        public_info: { extras: 'אינטרנט וחשמל מתחלקים.', furniture: 'מרוהט במלואו.', roommates: '2 שותפים בשנות ה-20 לחייהם.', floor: 'קומה 1.' } },
+    ],
+    prefs: { area: 'תל אביב', budget: 3200, rooms: 1, entry: addDays(18), type: 'any', hard: { noSmoking: true, pets: false, parking: false } },
+    messages: [
+      { message_id: 'm1', channel: 'internal', sender_id: 'ai', content: 'היי! אני העוזר של הדירה. אפשר לכתוב לי למשל "קניתי חלב ב-25 ₪" ואציע לרשום את ההוצאה, או לשאול "מה פתוח היום?".', timestamp: Date.now() - 86400000 * 3, kind: 'text' },
+      { message_id: 'm2', channel: 'internal', sender_id: 't2', content: 'מי קונה נייר טואלט השבוע?', timestamp: Date.now() - 3600000 * 5, kind: 'text' },
+      { message_id: 'm3', channel: 'internal', sender_id: 't3', content: 'אני, אעדכן כשקניתי', timestamp: Date.now() - 3600000 * 4, kind: 'text' },
+      { message_id: 'm4', channel: 'landlord', sender_id: 'l1', content: 'שלום לכולם, בעל המקצוע יגיע לגבי הנזילה ביום שלישי בבוקר.', timestamp: Date.now() - 3600000 * 20, kind: 'text' },
+      { message_id: 'm5', channel: 'listing:L1', sender_id: 'ai', content: 'שלום! אני סוכן הסינון של המודעה. אשמח לענות על שאלות לגבי הדירה.', timestamp: Date.now() - 3600000 * 30, kind: 'text' },
+    ],
+    notif: { messages: true, expense: true, tasks: true, monthly: true, match: true },
+  };
+}
+
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; } catch (e) {} return seed(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage full or blocked: keep working in memory */ } }
+let state = load();
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => '₪' + Number(n).toLocaleString('he-IL', { maximumFractionDigits: 2 });
+const fmtDate = d => { const [y, m, dd] = d.split('-'); return `${dd}.${m}.${y.slice(2)}`; };
+const fmtTime = t => new Date(t).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+const monthName = k => new Date(k + '-15').toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+const user = id => state.users.find(u => u.user_id === id) || { name: id === 'ai' ? 'עוזר AI' : '—' };
+const tenants = () => state.users.filter(u => u.role === 'Tenant');
+const apt = () => state.apartments[0];
+const me = () => state.session.user_id;
+const readFile = f => new Promise(r => { if (!f || !f.size) return r(null); const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => r(null); fr.readAsDataURL(f); });
+
+const ICONS = {
+  wallet: '<path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0 0 2-3h11v3M16 13h2"/>',
+  check: '<path d="M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>',
+  tool: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  cash: '<path d="M3 6h18v12H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 9v.01M18 15v.01"/>',
+  file: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M8 13h8M8 17h5"/>',
+  sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4"/>',
+  search: '<path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/>',
+  bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/>',
+  key: '<path d="M15 7a4 4 0 1 1-3.9 4.9L4 19v2h3v-2h2v-2h2l1.1-1.1A4 4 0 0 1 15 7zM16 8h.01"/>',
+  user: '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/>',
+};
+const icon = (n, s = 22) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+function toast(type, text, title) {
+  if (type && !state.notif[type]) return;
+  const box = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<b>${esc(title || '🔔 התראה')}</b>${esc(text)}`;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+function openModal(html) { document.getElementById('modal').innerHTML = `<div class="overlay" data-act="closeModalBg"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`; }
+function closeModal() { document.getElementById('modal').innerHTML = ''; }
+
+/* ---------- expenses & settlement ---------- */
+function balance() {
+  const ts = tenants();
+  const exp = state.expenses.filter(e => !e.is_cleared);
+  const total = exp.reduce((s, e) => s + e.amount, 0);
+  const share = ts.length ? total / ts.length : 0;
+  const rows = ts.map(u => { const paid = exp.filter(e => e.created_by_user_id === u.user_id).reduce((s, e) => s + e.amount, 0); return { id: u.user_id, paid, net: paid - share }; });
+  return { total, share, rows, transfers: settle(rows) };
+}
+// Greedy minimal transfers: largest debtor pays largest creditor until both sides are zero.
+function settle(rows) {
+  const cred = rows.filter(r => r.net > 0.005).map(r => ({ id: r.id, amt: r.net })).sort((a, b) => b.amt - a.amt);
+  const debt = rows.filter(r => r.net < -0.005).map(r => ({ id: r.id, amt: -r.net })).sort((a, b) => b.amt - a.amt);
+  const out = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const x = Math.min(debt[i].amt, cred[j].amt);
+    out.push({ from: debt[i].id, to: cred[j].id, amount: Math.round(x * 100) / 100 });
+    debt[i].amt -= x; cred[j].amt -= x;
+    if (debt[i].amt < 0.005) i++;
+    if (cred[j].amt < 0.005) j++;
+  }
+  return out;
+}
+function addExpense({ amount, category, description, payer, date, receipt }) {
+  const e = { expense_id: newId('e'), apartment_id: apt().apartment_id, created_by_user_id: payer, amount: Math.round(amount * 100) / 100, category, description, receipt_url: receipt || null, billing_period: state.period.id, is_cleared: false, date: date || iso(TODAY) };
+  state.expenses.unshift(e);
+  save();
+  toast('expense', `הוצאה חדשה של ${user(payer).name}: ${money(e.amount)} – ${category}`, '🔔 נשלחה התראה לשותפים');
+  if (e.date < state.period.start) toast(null, 'ההוצאה מתאריך שלפני סגירת התקופה הקודמת, ולכן נרשמה במאזן התקופה הנוכחית. תקופות סגורות לא נפתחות מחדש.', 'הוצאה שנשכחה');
+  return e;
+}
+function closePeriod(kind) {
+  const b = balance();
+  if (!b.total) { toast(null, 'אין הוצאות פתוחות בתקופה הנוכחית.', 'אין מה לקזז'); return; }
+  state.history.unshift({ period_id: state.period.id, start: state.period.start, end: iso(TODAY), total: b.total, kind, transfers: b.transfers });
+  state.expenses.forEach(e => { if (!e.is_cleared) e.is_cleared = true; });
+  state.period = { id: state.period.id + 1, start: iso(TODAY) };
+  save();
+  const lines = b.transfers.map(t => `${user(t.from).name} ← ${user(t.to).name}: ${money(t.amount)}`).join(' · ');
+  if (kind === 'monthly') toast('monthly', `סיכום חודשי: ${lines || 'אין העברות'}`, '🔔 סיכום כספי חודשי (31 בחודש)');
+  else toast(null, `התקופה נסגרה ונפתחה תקופת קיזוז חדשה. ${lines}`, 'איפוס מלא בוצע');
+}
+function transfersHtml(list) {
+  if (!list.length) return '<p class="muted small" style="margin:6px 0 0">כולם מאוזנים, אין צורך בהעברות.</p>';
+  return list.map(t => `<div class="transfer"><b>${esc(user(t.from).name)}</b><span class="arrow">מעבירים ל־</span><b class="grow">${esc(user(t.to).name)}</b><b>${money(t.amount)}</b></div>`).join('');
+}
+
+/* ---------- tasks ---------- */
+function roundRobin() {
+  const ts = tenants();
+  const pending = state.tasks.filter(t => t.status === 'Pending').sort((a, b) => a.due_date.localeCompare(b.due_date));
+  pending.forEach(t => { t.assigned_to_user_id = ts[state.rrIndex % ts.length].user_id; t.mode = 'Auto'; state.rrIndex++; });
+  save();
+  toast(null, `${pending.length} משימות שובצו בסבב בין ${ts.map(u => u.name).join(', ')}.`, 'שיבוץ אוטומטי');
+}
+function remind(when) {
+  const pending = state.tasks.filter(t => t.status === 'Pending' && t.due_date <= iso(TODAY));
+  if (!state.notif.tasks) { toast(null, 'תזכורות משימה כבויות בהגדרות ההתראות.', 'לא נשלחה תזכורת'); return; }
+  if (!pending.length) { toast(null, 'אין משימות פתוחות להיום 🎉', when === 'morning' ? 'תזכורת בוקר' : 'תזכורת ערב'); return; }
+  pending.forEach(t => toast('tasks', `${t.assigned_to_user_id ? user(t.assigned_to_user_id).name + ': ' : 'לא משובץ: '}${t.title}${when === 'evening' ? ' – עדיין לא סומנה כבוצעה' : ''}`, when === 'morning' ? '🔔 תזכורת בוקר' : '🔔 תזכורת ערב (שנייה)'));
+}
+
+/* ---------- issues ---------- */
+const ISSUE_STATUS = { Open: ['פתוח', 'danger'], In_Progress: ['בטיפול', 'warn'], Technician: ['נשלח בעל מקצוע', 'warn'], Closed: ['טופל', 'ok'] };
+const ISSUE_ORDER = ['Open', 'In_Progress', 'Technician', 'Closed'];
+function issueCard(i, landlord) {
+  const [label, cls] = ISSUE_STATUS[i.status];
+  const step = ISSUE_ORDER.indexOf(i.status);
+  return `<div class="card">
+    <div class="spread"><h3 style="margin:0">${esc(i.title)}</h3><span class="pill ${cls}">${label}</span></div>
+    <div class="small muted">דווח ע״י ${esc(user(i.reported_by_user_id).name)} · ${fmtDate(i.date)}</div>
+    ${i.description ? `<p style="margin:8px 0 0">${esc(i.description)}</p>` : ''}
+    <div class="steps ${i.status === 'Closed' ? 'closed' : ''}">${ISSUE_ORDER.map((s, n) => `<span class="${n <= step ? 'on' : ''}" title="${ISSUE_STATUS[s][0]}"></span>`).join('')}</div>
+    <div class="row wrap" style="margin-top:10px">
+      ${i.image ? `<img class="thumb" src="${i.image}" alt="תמונת התקלה" data-act="viewImg">` : ''}
+      ${i.receipt_url ? `<img class="thumb" src="${i.receipt_url}" alt="קבלה על התיקון" data-act="viewImg"><span class="small muted">קבלה מצורפת מהמשכירה</span>` : ''}
+    </div>
+    ${landlord ? `<div class="row wrap" style="margin-top:10px">
+      <select class="in grow" data-change="issueStatus" data-id="${i.issue_id}" aria-label="עדכון סטטוס">${ISSUE_ORDER.map(s => `<option value="${s}" ${s === i.status ? 'selected' : ''}>${ISSUE_STATUS[s][0]}</option>`).join('')}</select>
+      <label class="btn line sm" style="cursor:pointer">צירוף קבלה<input type="file" accept="image/*" hidden data-change="issueReceipt" data-id="${i.issue_id}"></label>
+    </div>` : ''}
+  </div>`;
+}
+
+/* ---------- matchmaking ---------- */
+function scoreListing(l, p) {
+  const priceS = l.price <= p.budget ? 100 : Math.max(0, Math.round(100 - ((l.price - p.budget) / p.budget) * 250));
+  const days = Math.abs((new Date(l.entry_date) - new Date(p.entry)) / 86400000);
+  const dateS = Math.max(0, Math.round(100 - days * 2.5));
+  const areaS = !p.area || l.area === p.area ? 100 : 40;
+  const roomsS = l.rooms >= p.rooms ? 100 : 50;
+  const total = Math.round(priceS * 0.45 + dateS * 0.25 + areaS * 0.2 + roomsS * 0.1);
+  return { total, priceS, dateS, areaS };
+}
+function passesHard(l, p) {
+  const h = l.hard_constraints_json, r = [];
+  if (p.hard.noSmoking && h.smoking) r.push('מותר עישון');
+  if (p.hard.pets && !h.pets) r.push('בלי חיות מחמד');
+  if (p.hard.parking && !h.parking) r.push('אין חניה');
+  if (p.type === 'whole' && l.publisher_type !== 'Landlord') r.push('חדר בדירת שותפים');
+  if (p.type === 'room' && l.publisher_type !== 'Tenants') r.push('דירה שלמה');
+  return r;
+}
+function feed() {
+  const p = state.prefs, shown = [], hidden = [];
+  state.listings.forEach(l => { const fail = passesHard(l, p); if (fail.length) hidden.push({ l, fail }); else shown.push({ l, s: scoreListing(l, p) }); });
+  shown.sort((a, b) => (b.l.premium - a.l.premium) || (b.s.total - a.s.total));
+  return { shown, hidden };
+}
+
+/* ---------- AI agents (rule-based, in-browser) ---------- */
+function guessCategory(t) {
+  if (/ניקוי|סבון|אקונומיקה|ספוג|כביסה|מרכך|נוזל כלים/.test(t)) return 'חומרי ניקוי';
+  if (/חלב|לחם|סופר|אוכל|קפה|ירקות|פירות|ביצים|קניות/.test(t)) return 'מזון וקניות';
+  if (/נורה|ציוד|כלים|מגב|סיר|מחבת|וילון|מטאטא/.test(t)) return 'ציוד לבית';
+  if (/חשמל|מים|גז|אינטרנט|ארנונה/.test(t)) return 'חשבונות';
+  return 'אחר';
+}
+function detectExpenseIntent(text) {
+  const num = text.match(/(\d+(?:[.,]\d{1,2})?)/);
+  if (!num) return null;
+  if (!/(קניתי|שילמתי|הוצאתי|קנינו|שילמנו|הזמנתי|עלה|עלו|₪|ש"ח|שח|שקל)/.test(text)) return null;
+  return { amount: parseFloat(num[1].replace(',', '.')), category: guessCategory(text), description: text.slice(0, 60) };
+}
+function internalAgent(text) {
+  const intent = detectExpenseIntent(text);
+  if (intent && intent.amount > 0) {
+    return { kind: 'proposal', content: 'זיהיתי הוצאה. לרשום אותה במאזן?', data: { ...intent, payer: me() }, status: 'pending' };
+  }
+  if (/(משימ|תורנ|מה פתוח|מה נשאר|מטל)/.test(text)) {
+    const p = state.tasks.filter(t => t.status === 'Pending' && t.due_date <= iso(TODAY));
+    const done = state.tasks.filter(t => t.status === 'Done').length;
+    return { kind: 'text', content: p.length ? `פתוח להיום: ${p.map(t => `${t.title} (${t.assigned_to_user_id ? user(t.assigned_to_user_id).name : 'לא משובץ'})`).join(', ')}. סה״כ ${done} משימות בוצעו.` : 'אין משימות פתוחות להיום. כל הכבוד!' };
+  }
+  if (/(מאזן|חייב|קיזוז|כמה אני|מי מעביר)/.test(text)) {
+    const b = balance();
+    return { kind: 'text', content: b.transfers.length ? 'מצב ביניים: ' + b.transfers.map(t => `${user(t.from).name} ← ${user(t.to).name} ${money(t.amount)}`).join(' · ') : 'כולם מאוזנים כרגע.' };
+  }
+  return null; // regular chat message, the agent stays quiet
+}
+function listingAgent(l, text) {
+  const info = l.public_info, h = l.hard_constraints_json;
+  if (/(טלפון|כתובת מדויקת|מספר בית|שם המשכיר|חוזה|ערבות|ביטחונות|הנחה|להוריד במחיר)/.test(text)) return { handoff: true, content: 'זה מידע שלא פורסם במודעה. העברתי את השאלה למפרסם, והתשובה תגיע כאן בצ׳אט.' };
+  if (/(מחיר|עולה|שכירות|כמה)/.test(text)) return { content: `המחיר המפורסם הוא ${money(l.price)} לחודש. ${info.extras}` };
+  if (/(כניסה|תאריך|מתי|פנוי)/.test(text)) return { content: `תאריך הכניסה המתוכנן: ${fmtDate(l.entry_date)}.` };
+  if (/(חיות|כלב|חתול)/.test(text)) return { content: h.pets ? 'כן, מותר להכניס חיות מחמד.' : 'לצערי אין אפשרות לחיות מחמד בדירה הזו.' };
+  if (/(עישון|מעשנ)/.test(text)) return { content: h.smoking ? 'מותר לעשן בדירה.' : 'הדירה מיועדת ללא מעשנים.' };
+  if (/(חניה|חנייה|רכב)/.test(text)) return { content: h.parking ? 'יש חניה צמודה.' : 'אין חניה צמודה.' };
+  if (/(שותפ|מי גר|אווירה)/.test(text)) return { content: info.roommates };
+  if (/(ריהוט|מרוהט|רהיט|מיטה)/.test(text)) return { content: info.furniture };
+  if (/(קומה|מעלית)/.test(text)) return { content: info.floor };
+  if (/(ארנונה|ועד|חשבונות|חשמל)/.test(text)) return { content: info.extras };
+  return { handoff: true, content: 'אין לי תשובה מוכנה לשאלה הזו. העברתי אותה למפרסם לסינון אנושי.' };
+}
+function pushMsg(channel, sender_id, content, extra = {}) {
+  const m = { message_id: newId('m'), channel, sender_id, content, timestamp: Date.now(), kind: 'text', ...extra };
+  state.messages.push(m); save(); return m;
+}
+
+/* ---------- views ---------- */
+const TABS = {
+  tenant: [['expenses', 'הוצאות', 'wallet'], ['tasks', 'משימות', 'check'], ['issues', 'תקלות', 'tool'], ['chat', 'צ׳אט', 'chat'], ['home', 'הדירה', 'home']],
+  landlord: [['rent', 'שכירות', 'cash'], ['issues', 'תקלות', 'tool'], ['bills', 'חשבונות', 'file'], ['chat', 'צ׳אט', 'chat'], ['contract', 'חוזה', 'key']],
+  seeker: [['prefs', 'העדפות', 'sliders'], ['feed', 'פיד דירות', 'search'], ['chat', 'צ׳אט', 'chat']],
+};
+const ROLE_OF = { Tenant: 'tenant', Landlord: 'landlord', Seeker: 'seeker' };
+const ROLE_LABEL = { tenant: 'שוכר/ת', landlord: 'משכיר/ה', seeker: 'מחפש/ת דירה' };
+
+function header() {
+  const s = state.session, role = s.role;
+  return `<header class="top">
+    <h1>${role ? 'הדירה שלנו' : 'אפליקציית שותפים'}</h1>
+    <span class="demo-badge">אב-טיפוס · נתוני דמה</span>
+    ${role ? `<div class="row wrap" style="width:100%;margin-top:4px">
+      <select data-change="switchRole" aria-label="החלפת תפקיד">${Object.keys(TABS).map(r => `<option value="${r}" ${r === role ? 'selected' : ''}>תצוגה: ${ROLE_LABEL[r]}</option>`).join('')}</select>
+      ${role === 'tenant' ? `<select data-change="switchUser" aria-label="מחובר/ת בתור">${tenants().map(u => `<option value="${u.user_id}" ${u.user_id === me() ? 'selected' : ''}>מחובר/ת: ${esc(u.name)}</option>`).join('')}</select>` : `<span class="small" style="opacity:.85">מחובר/ת: ${esc(user(me()).name)}</span>`}
+      <span class="grow"></span>
+      <a class="icon-btn" href="#/settings" aria-label="הגדרות התראות">${icon('bell')}</a>
+    </div>` : ''}
+  </header>`;
+}
+function nav(role, tab) {
+  return `<nav class="bottom">${TABS[role].map(([k, label, ic]) => `<a href="#/${role}/${k}" class="${k === tab ? 'on' : ''}">${icon(ic)}<span>${label}</span></a>`).join('')}</nav>`;
+}
+
+function viewLogin() {
+  return `<main>
+    <div class="hero"><div class="logo">${icon('home', 34)}</div><h2>ניהול דירת שותפים במקום אחד</h2>
+    <p class="muted">הוצאות וקיזוזים, תורנויות, תקלות מול המשכיר וחיפוש שותפים.</p></div>
+    <form class="card" data-form="login">
+      <div class="seg" role="tablist"><button type="button" class="on">התחברות</button><button type="button" data-act="noop">הרשמה</button></div>
+      <label class="f" for="lname">שם</label><input id="lname" name="name" type="text" placeholder="השם שלכם" autocomplete="off">
+      <label class="f" for="lmail">אימייל</label><input id="lmail" name="email" type="email" placeholder="name@example.com" autocomplete="off">
+      <label class="f" for="lpass">סיסמה</label><input id="lpass" name="pass" type="password" placeholder="••••••" autocomplete="off">
+      <button class="btn block" style="margin-top:14px">כניסה</button>
+      <p class="small muted" style="margin:10px 0 0">באב-טיפוס כל פרט נכנס. שום מידע לא נשלח לשרת.</p>
+    </form>
+  </main>`;
+}
+function viewRole() {
+  const card = (r, ic, title, text, extra = '') => `<button class="role-card" data-act="pickRole" data-role="${r}"><span class="ic">${icon(ic)}</span><span><b>${title}</b><br><span class="small muted">${text}</span>${extra}</span></button>`;
+  return `<main>
+    <h2>${state.session.name ? 'שלום ' + esc(state.session.name) + ', ' : ''}איך תשתמשו באפליקציה?</h2>
+    <p class="muted small" style="margin-top:-6px">התפקיד קובע את התצוגה וההרשאות. אפשר להחליף בכל רגע מהכותרת.</p>
+    ${card('tenant', 'home', 'שוכר/ת', 'מאזן הוצאות וקיזוזים, לוח תורנויות, דיווח תקלות, צ׳אט דירתי וצפייה בחוזה.', ' <span class="pill">מוקד גרסה 1</span>')}
+    ${card('landlord', 'key', 'משכיר/ה', 'מעקב גביית שכירות, חוזה, ניהול סטטוס תקלות, העלאת חשבונות וצ׳אט.')}
+    ${card('seeker', 'search', 'מחפש/ת דירה או שותף', 'העדפות ופילטרים, פיד דירות עם ציון התאמה, וצ׳אט סינון מול סוכן AI.')}
+  </main>`;
+}
+
+function viewTenantExpenses() {
+  const b = balance(), mine = b.rows.find(r => r.id === me()) || { paid: 0, net: 0 };
+  const cur = state.expenses.filter(e => !e.is_cleared);
+  return `<main>
+    <h2>מאזן הוצאות</h2>
+    <div class="card">
+      <div class="spread"><h3 style="margin:0">תקופה נוכחית</h3><span class="small muted">מ־${fmtDate(state.period.start)} · קיזוז אוטומטי ב־31</span></div>
+      <div class="stat" style="margin-top:10px">
+        <div><b>${money(b.total)}</b><span>סה״כ הוצאות</span></div>
+        <div><b>${money(b.share)}</b><span>חלק לכל שותף</span></div>
+        <div><b class="${mine.net >= 0 ? 'pos' : 'neg'}">${mine.net >= 0 ? '+' : '−'}${money(Math.abs(mine.net))}</b><span>המאזן שלי</span></div>
+      </div>
+      <h3 style="margin-top:14px">מי מעביר למי וכמה</h3>
+      ${transfersHtml(b.transfers)}
+      <div class="grid2" style="margin-top:12px">
+        <button class="btn ghost" data-act="snapshot">מצב ביניים</button>
+        <button class="btn line" data-act="resetPeriod">איפוס מלא</button>
+      </div>
+      <button class="btn line block sm" style="margin-top:8px" data-act="simulate31">סימולציה: הגיע ה־31 בחודש</button>
+    </div>
+
+    <details class="card" ${cur.length ? '' : 'open'}>
+      <summary>הוספת הוצאה</summary>
+      <form data-form="expense" style="margin-top:6px">
+        <div class="grid2">
+          <div><label class="f" for="eamt">סכום (₪)</label><input id="eamt" name="amount" type="number" min="0.1" step="0.1" required></div>
+          <div><label class="f" for="ecat">קטגוריה</label><select id="ecat" class="in" name="category">${['מזון וקניות', 'חומרי ניקוי', 'ציוד לבית', 'חשבונות', 'אחר'].map(c => `<option>${c}</option>`).join('')}</select></div>
+        </div>
+        <label class="f" for="edesc">תיאור</label><input id="edesc" name="description" type="text" placeholder="למשל: קניות סופר">
+        <div class="grid2">
+          <div><label class="f" for="epay">שילם/ה</label><select id="epay" class="in" name="payer">${tenants().map(u => `<option value="${u.user_id}" ${u.user_id === me() ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}</select></div>
+          <div><label class="f" for="edate">תאריך</label><input id="edate" name="date" type="date" value="${iso(TODAY)}" max="${iso(TODAY)}"></div>
+        </div>
+        <label class="f" for="erec">קבלה / חשבונית (לא חובה)</label><input id="erec" name="receipt" type="file" accept="image/*">
+        <p class="small muted" style="margin:8px 0">ההזנה מבוססת אמון ונרשמת מיד, בלי אישור של שאר השותפים.</p>
+        <button class="btn block">רישום הוצאה</button>
+      </form>
+    </details>
+
+    <div class="card">
+      <h3>הוצאות בתקופה (${cur.length})</h3>
+      ${cur.length ? `<ul class="list">${cur.map(e => `<li class="row">
+        ${e.receipt_url ? `<img class="thumb" src="${e.receipt_url}" alt="קבלה" data-act="viewImg">` : ''}
+        <div class="grow"><b>${esc(e.description || e.category)}</b><div class="small muted">${esc(user(e.created_by_user_id).name)} · ${e.category} · ${fmtDate(e.date)}</div></div>
+        <b>${money(e.amount)}</b></li>`).join('')}</ul>` : '<p class="muted small">אין עדיין הוצאות בתקופה הזו.</p>'}
+    </div>
+
+    <div class="card">
+      <h3>היסטוריית קיזוזים</h3>
+      ${state.history.length ? `<ul class="list">${state.history.map(h => `<li>
+        <div class="spread"><b>${fmtDate(h.start)} – ${fmtDate(h.end)}</b><span class="pill ${h.kind === 'monthly' ? '' : 'gray'}">${h.kind === 'monthly' ? 'קיזוז חודשי' : 'איפוס באמצע חודש'}</span></div>
+        <div class="small muted">סה״כ ${money(h.total)} · תקופה סגורה</div>${transfersHtml(h.transfers)}</li>`).join('')}</ul>` : '<p class="muted small">עוד לא בוצע קיזוז.</p>'}
+    </div>
+  </main>`;
+}
+
+function viewTenantTasks() {
+  const auto = state.taskMode === 'Auto';
+  const sorted = [...state.tasks].sort((a, b) => (a.status === 'Done') - (b.status === 'Done') || a.due_date.localeCompare(b.due_date));
+  const today = state.tasks.filter(t => t.due_date <= iso(TODAY));
+  const doneToday = today.filter(t => t.status === 'Done').length;
+  return `<main>
+    <h2>משימות ותורנויות</h2>
+    <div class="card">
+      <div class="seg"><button class="${auto ? 'on' : ''}" data-act="taskMode" data-mode="Auto">סבב אוטומטי</button><button class="${auto ? '' : 'on'}" data-act="taskMode" data-mode="Free">בחירה חופשית</button></div>
+      <p class="small muted" style="margin:10px 0">${auto ? 'המשימות הפתוחות משובצות בסבב (Round-Robin) בין כל השותפים.' : 'כל אחד בוחר משימות פנויות ומשבץ את עצמו.'}</p>
+      ${auto ? '<button class="btn ghost block" data-act="roundRobin">שיבוץ מחדש בסבב</button>' : ''}
+    </div>
+    <div class="card">
+      <div class="spread"><h3 style="margin:0">סטטוס יומי</h3><span class="pill ${doneToday === today.length ? 'ok' : 'warn'}">${doneToday}/${today.length} בוצעו</span></div>
+      <div class="bar" style="margin-top:10px"><i style="width:${today.length ? (doneToday / today.length) * 100 : 100}%"></i></div>
+      <div class="grid2" style="margin-top:12px"><button class="btn line sm" data-act="remind" data-when="morning">סימולציה: תזכורת בוקר</button><button class="btn line sm" data-act="remind" data-when="evening">סימולציה: תזכורת ערב</button></div>
+    </div>
+    <div class="card">
+      <h3>כל המשימות</h3>
+      <ul class="list">${sorted.map(t => {
+        const mine = t.assigned_to_user_id === me(), late = t.status === 'Pending' && t.due_date < iso(TODAY);
+        return `<li class="task ${t.status === 'Done' ? 'done' : ''}">
+          <button class="check ${t.status === 'Done' ? 'on' : ''}" data-act="toggleTask" data-id="${t.task_id}" aria-label="סימון כבוצע">${t.status === 'Done' ? '✓' : ''}</button>
+          <div class="grow"><div class="t-title"><b>${esc(t.title)}</b></div>
+            <div class="small muted">${t.due_date === iso(TODAY) ? 'היום' : fmtDate(t.due_date)} · ${t.assigned_to_user_id ? esc(user(t.assigned_to_user_id).name) : '<span class="pill gray">פנויה</span>'}${late ? ' · <span class="pill danger">באיחור</span>' : ''}</div></div>
+          ${!auto && t.status === 'Pending' ? (t.assigned_to_user_id ? (mine ? `<button class="btn line sm" data-act="releaseTask" data-id="${t.task_id}">שחרור</button>` : '') : `<button class="btn sm" data-act="claimTask" data-id="${t.task_id}">שיבוץ אליי</button>`) : ''}
+        </li>`; }).join('')}</ul>
+      <details style="margin-top:10px"><summary>משימה חדשה</summary>
+        <form data-form="task" class="row" style="margin-top:8px"><input name="title" type="text" placeholder="שם המשימה" required aria-label="שם המשימה" class="grow"><input name="due" type="date" value="${iso(TODAY)}" style="width:140px" aria-label="תאריך"><button class="btn sm">הוספה</button></form>
+      </details>
+    </div>
+  </main>`;
+}
+
+function viewTenantIssues() {
+  const list = [...state.issues].sort((a, b) => (a.status === 'Closed') - (b.status === 'Closed') || b.date.localeCompare(a.date));
+  return `<main>
+    <h2>תקלות בדירה</h2>
+    <details class="card"><summary>דיווח על תקלה חדשה</summary>
+      <form data-form="issue" style="margin-top:6px">
+        <label class="f" for="ititle">מה התקלה?</label><input id="ititle" name="title" type="text" required placeholder="למשל: הדוד לא מחמם">
+        <label class="f" for="idesc">פרטים</label><textarea id="idesc" name="description" placeholder="מתי זה התחיל, איפה בדיוק..."></textarea>
+        <label class="f" for="iimg">תמונה (לא חובה)</label><input id="iimg" name="image" type="file" accept="image/*">
+        <button class="btn block" style="margin-top:12px">שליחה למשכירה</button>
+      </form>
+    </details>
+    <p class="small muted">הסטטוס מתעדכן בזמן אמת אצל כל השוכרים והמשכירה.</p>
+    ${list.map(i => issueCard(i, false)).join('')}
+  </main>`;
+}
+
+function chatView(channel, { placeholder, chips = [], canPost = true, title = '' } = {}) {
+  const msgs = state.messages.filter(m => m.channel === channel);
+  return `<div class="chat">
+    ${title}
+    <div class="chat-log" id="chatlog">${msgs.map(msgHtml).join('') || '<div class="msg sys">אין עדיין הודעות.</div>'}</div>
+    ${chips.length ? `<div class="chips">${chips.map(c => `<button class="chip" data-act="chip" data-text="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+    ${canPost ? `<form class="chat-form" data-form="chat" data-channel="${channel}"><input name="text" type="text" placeholder="${placeholder || 'הודעה...'}" autocomplete="off" required aria-label="הודעה"><button class="btn">שליחה</button></form>` : ''}
+  </div>`;
+}
+function msgHtml(m) {
+  const isMe = m.sender_id === me(), ai = m.sender_id === 'ai';
+  let body = esc(m.content);
+  if (m.kind === 'proposal') {
+    const d = m.data;
+    body += `<div class="proposal"><div class="spread"><b>${money(d.amount)}</b><span class="pill ai">${esc(d.category)}</span></div>
+      <div class="small muted">${esc(d.description)} · שילם/ה: ${esc(user(d.payer).name)}</div>
+      ${m.status === 'pending' ? `<div class="grid2" style="margin-top:8px"><button class="btn ok sm" data-act="approveExp" data-id="${m.message_id}">אישור ורישום</button><button class="btn line sm" data-act="cancelExp" data-id="${m.message_id}">ביטול</button></div>`
+        : `<div class="small" style="margin-top:6px">${m.status === 'approved' ? '✓ נרשם במאזן' : '✕ בוטל, לא נרשם'}</div>`}</div>`;
+  }
+  if (m.kind === 'handoff') body += `<div class="small" style="margin-top:4px"><span class="pill warn">הועבר לסינון אנושי</span></div>`;
+  return `<div class="msg ${isMe ? 'me' : ''} ${ai ? 'ai' : ''}">${isMe ? '' : `<div class="who">${ai ? '✦ סוכן AI' : esc(user(m.sender_id).name)}</div>`}${body}<div class="time">${fmtTime(m.timestamp)}</div></div>`;
+}
+
+function viewTenantChat() {
+  return `<main><h2 style="margin-bottom:4px">צ׳אט דירתי</h2><p class="small muted" style="margin:0 0 8px">שוכרים בלבד. המשכירה לא רואה את הצ׳אט הזה.</p>
+    ${chatView('internal', { placeholder: 'כתבו לשותפים או לעוזר...', chips: ['קניתי חומרי ניקוי ב-38 ₪', 'מה פתוח היום?', 'מה המאזן?'] })}</main>`;
+}
+
+function rentRows(k, editable) {
+  const r = state.rent[k] || {}, per = apt().rent_amount / tenants().length;
+  return tenants().map(u => {
+    const st = r[u.user_id] || 'pending';
+    return `<li class="spread"><span class="grow">${esc(u.name)} <span class="small muted">· ${money(per)}</span></span>${editable
+      ? `<button class="btn sm ${st === 'paid' ? 'ok' : 'line'}" data-act="toggleRent" data-month="${k}" data-id="${u.user_id}">${st === 'paid' ? 'שולם ✓' : 'סימון כשולם'}</button>`
+      : `<span class="pill ${st === 'paid' ? 'ok' : 'warn'}">${st === 'paid' ? 'שולם' : 'ממתין'}</span>`}</li>`;
+  }).join('');
+}
+function contractCard() {
+  const a = apt();
+  return `<div class="card"><h3>חוזה שכירות</h3><dl class="kv">
+    <dt>כתובת</dt><dd>${esc(a.address)}</dd>
+    <dt>שכר דירה</dt><dd>${money(a.rent_amount)} לחודש</dd>
+    <dt>תקופה</dt><dd>${fmtDate(a.contract.start)} – ${fmtDate(a.contract.end)}</dd>
+    <dt>בטוחה</dt><dd>${esc(a.contract.deposit)}</dd>
+    <dt>משכירה</dt><dd>${esc(user(a.landlord_id).name)}</dd>
+    <dt>שוכרים</dt><dd>${tenants().map(u => esc(u.name)).join(', ')}</dd></dl>
+    <h3 style="margin-top:14px">כללי הבית</h3><ul class="small" style="margin:0;padding-inline-start:18px">${a.rules_json.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+    <button class="btn ghost block" style="margin-top:12px" data-act="openContract">צפייה בקובץ החוזה</button></div>`;
+}
+function billsList(landlord) {
+  return state.bills.length ? `<ul class="list">${state.bills.map(b => `<li class="row">
+    ${b.file ? `<img class="thumb" src="${b.file}" alt="החשבון" data-act="viewImg">` : ''}
+    <div class="grow"><b>${esc(b.title)}</b><div class="small muted">לתשלום עד ${fmtDate(b.due_date)}</div></div>
+    <b>${money(b.amount)}</b>
+    ${landlord ? `<button class="btn sm ${b.status === 'paid' ? 'ok' : 'line'}" data-act="toggleBill" data-id="${b.bill_id}">${b.status === 'paid' ? 'שולם ✓' : 'סימון כשולם'}</button>` : `<span class="pill ${b.status === 'paid' ? 'ok' : 'warn'}">${b.status === 'paid' ? 'שולם' : 'פתוח'}</span>`}
+  </li>`).join('')}</ul>` : '<p class="muted small">אין חשבונות פתוחים.</p>';
+}
+
+function viewTenantHome() {
+  return `<main>
+    <h2>הדירה מול המשכירה</h2>
+    <div class="card"><div class="spread"><h3 style="margin:0">שכירות – ${monthName(monthKey())}</h3></div><ul class="list" style="margin-top:6px">${rentRows(monthKey(), false)}</ul></div>
+    <div class="card"><h3>חשבונות מהמשכירה</h3>${billsList(false)}</div>
+    ${contractCard()}
+    <div class="card"><h3>צ׳אט עם המשכירה</h3>${chatView('landlord', { placeholder: 'הודעה למשכירה...' })}</div>
+  </main>`;
+}
+
+const ISOLATION = '<div class="note info">🔒 הנתונים הפנימיים של השוכרים (מאזן הוצאות, משימות וצ׳אט פנימי) אינם נגישים למשכירה.</div>';
+function viewLandlordRent() {
+  const months = Object.keys(state.rent).sort().reverse();
+  const cur = state.rent[monthKey()] || {}, per = apt().rent_amount / tenants().length;
+  const paid = tenants().filter(u => cur[u.user_id] === 'paid').length * per;
+  return `<main>
+    <h2>מעקב גביית שכירות</h2>${ISOLATION}
+    <div class="card"><div class="small muted">${esc(apt().address)}</div>
+      <div class="stat" style="margin-top:10px"><div><b>${money(paid)}</b><span>נגבה החודש</span></div><div><b>${money(apt().rent_amount - paid)}</b><span>ממתין</span></div><div><b>${tenants().length}</b><span>שוכרים</span></div></div>
+    </div>
+    ${months.map((k, n) => `<div class="card"><h3>${monthName(k)}</h3><ul class="list">${rentRows(k, n === 0)}</ul></div>`).join('')}
+  </main>`;
+}
+function viewLandlordIssues() {
+  const list = [...state.issues].sort((a, b) => (a.status === 'Closed') - (b.status === 'Closed') || b.date.localeCompare(a.date));
+  const open = list.filter(i => i.status !== 'Closed').length;
+  return `<main><h2>ניהול תקלות</h2>${ISOLATION}<p class="small muted">${open} תקלות פתוחות. עדכון הסטטוס מופיע מיד אצל השוכרים.</p>${list.map(i => issueCard(i, true)).join('')}</main>`;
+}
+function viewLandlordBills() {
+  return `<main><h2>חשבונות ודרישות תשלום</h2>${ISOLATION}
+    <details class="card"><summary>העלאת חשבון חדש</summary>
+      <form data-form="bill" style="margin-top:6px">
+        <label class="f" for="btitle">תיאור</label><input id="btitle" name="title" type="text" required placeholder="למשל: חשבון חשמל">
+        <div class="grid2"><div><label class="f" for="bamt">סכום (₪)</label><input id="bamt" name="amount" type="number" min="1" required></div>
+        <div><label class="f" for="bdue">לתשלום עד</label><input id="bdue" name="due" type="date" value="${addDays(14)}"></div></div>
+        <label class="f" for="bfile">קובץ החשבון (תמונה)</label><input id="bfile" name="file" type="file" accept="image/*">
+        <button class="btn block" style="margin-top:12px">העלאה ושליחה לשוכרים</button>
+      </form></details>
+    <div class="card"><h3>חשבונות</h3>${billsList(true)}</div></main>`;
+}
+function viewLandlordChat(sub) {
+  const myListings = state.listings.filter(l => l.publisher_type === 'Landlord');
+  const ch = sub && sub.startsWith('L') ? 'listing:' + sub : 'landlord';
+  return `<main><h2 style="margin-bottom:8px">צ׳אט</h2>
+    <div class="chips"><a class="chip ${ch === 'landlord' ? 'on' : ''}" href="#/landlord/chat" style="text-decoration:none;color:inherit;${ch === 'landlord' ? 'border-color:var(--brand);color:var(--brand)' : ''}">השוכרים בדירה</a>
+    ${myListings.map(l => { const n = state.messages.filter(m => m.channel === 'listing:' + l.listing_id && m.kind === 'handoff').length; const on = ch === 'listing:' + l.listing_id; return `<a class="chip" href="#/landlord/chat/${l.listing_id}" style="text-decoration:none;color:inherit;${on ? 'border-color:var(--brand);color:var(--brand)' : ''}">מועמדים: ${esc(l.title)}${n ? ` <span class="pill warn">${n}</span>` : ''}</a>`; }).join('')}</div>
+    ${ch !== 'landlord' ? '<p class="small muted" style="margin:0 0 6px">שאלות שהסוכן לא ענה עליהן מסומנות "הועבר לסינון אנושי".</p>' : ''}
+    ${chatView(ch, { placeholder: 'תשובה...' })}</main>`;
+}
+function viewLandlordContract() { return `<main><h2>חוזה ומסמכים</h2>${contractCard()}<div class="card"><h3>היסטוריית תשלומים</h3><p class="small muted" style="margin:0">כל תשלומי השכירות מתועדים בלשונית "שכירות".</p></div></main>`; }
+
+function viewSeekerPrefs() {
+  const p = state.prefs, h = p.hard;
+  const box = (k, label) => `<label class="row" style="margin:6px 0"><input type="checkbox" name="hard_${k}" ${h[k] ? 'checked' : ''}> ${label}</label>`;
+  return `<main><h2>העדפות חיפוש</h2>
+    <form data-form="prefs">
+      <div class="card"><h3>פילטרים גמישים <span class="pill gray">משפיעים על ציון ההתאמה</span></h3>
+        <div class="grid2">
+          <div><label class="f" for="parea">אזור</label><select id="parea" class="in" name="area">${['', 'תל אביב', 'רמת גן', 'גבעתיים'].map(a => `<option value="${a}" ${a === p.area ? 'selected' : ''}>${a || 'הכול'}</option>`).join('')}</select></div>
+          <div><label class="f" for="pbud">תקציב חודשי (₪)</label><input id="pbud" name="budget" type="number" min="500" step="100" value="${p.budget}"></div>
+          <div><label class="f" for="prooms">מספר חדרים (מינ׳)</label><input id="prooms" name="rooms" type="number" min="1" max="6" value="${p.rooms}"></div>
+          <div><label class="f" for="pentry">תאריך כניסה</label><input id="pentry" name="entry" type="date" value="${p.entry}"></div>
+        </div></div>
+      <div class="card"><h3>פילטרים קשיחים <span class="pill danger">תנאי סף</span></h3>
+        <p class="small muted" style="margin:0 0 6px">מודעות שלא עומדות בתנאים האלה לא יוצגו בכלל.</p>
+        ${box('noSmoking', 'חובה ללא מעשנים')}${box('pets', 'חובה לאפשר חיות מחמד')}${box('parking', 'חובה חניה')}
+        <label class="f" for="ptype">מה מחפשים?</label><select id="ptype" class="in" name="type">
+          <option value="any" ${p.type === 'any' ? 'selected' : ''}>הכול</option><option value="whole" ${p.type === 'whole' ? 'selected' : ''}>דירה שלמה (ממשכיר)</option><option value="room" ${p.type === 'room' ? 'selected' : ''}>חדר בדירת שותפים</option></select>
+      </div>
+      <button class="btn block">שמירה והצגת התאמות</button>
+    </form></main>`;
+}
+function viewSeekerFeed() {
+  const { shown, hidden } = feed();
+  return `<main><div class="spread"><h2>פיד דירות</h2><a class="btn ghost sm" href="#/seeker/prefs" style="text-decoration:none">עריכת העדפות</a></div>
+    <p class="small muted" style="margin-top:-6px">ממוין לפי ציון התאמה. ${hidden.length} מודעות סוננו לפי תנאי הסף.</p>
+    ${shown.map(({ l, s }) => `<div class="card listing">
+      <div class="spread"><div class="grow">${l.premium ? '<span class="pill warn">מקודם</span> ' : ''}<span class="pill gray">${l.publisher_type === 'Landlord' ? 'דירה שלמה · משכיר' : 'חדר · שוכרים מחפשים שותף'}</span>
+        <h3 style="margin:6px 0 0">${esc(l.title)}</h3><div class="small muted">${esc(l.area)} · ${l.rooms} חד׳ · כניסה ${fmtDate(l.entry_date)}</div></div>
+        <div style="text-align:center"><div class="score">${s.total}%</div><div class="small muted">התאמה</div></div></div>
+      <div class="bar"><i style="width:${s.total}%"></i></div>
+      <div class="tags"><span class="pill ${s.priceS === 100 ? 'ok' : 'warn'}">מחיר ${money(l.price)}${s.priceS < 100 ? ' · מעל התקציב' : ''}</span><span class="pill ${s.dateS >= 80 ? 'ok' : 'warn'}">תאריך ${s.dateS}%</span><span class="pill ${s.areaS === 100 ? 'ok' : 'gray'}">אזור ${s.areaS}%</span></div>
+      <div class="tags">${l.hard_constraints_json.smoking ? '<span class="pill gray">מותר עישון</span>' : '<span class="pill gray">ללא מעשנים</span>'}${l.hard_constraints_json.pets ? '<span class="pill gray">חיות מחמד</span>' : ''}${l.hard_constraints_json.parking ? '<span class="pill gray">חניה</span>' : ''}</div>
+      <a class="btn block" href="#/seeker/chat/${l.listing_id}" style="margin-top:12px;text-align:center;text-decoration:none">שאלה לסוכן המודעה</a>
+    </div>`).join('') || '<div class="card muted">אין מודעות שעומדות בכל תנאי הסף. נסו לרכך פילטר קשיח.</div>'}
+    ${hidden.length ? `<details class="card"><summary>מודעות שסוננו (${hidden.length})</summary><ul class="list" style="margin-top:6px">${hidden.map(({ l, fail }) => `<li><b>${esc(l.title)}</b><div class="small muted">סיבה: ${fail.join(', ')}</div></li>`).join('')}</ul></details>` : ''}
+  </main>`;
+}
+function viewSeekerChat(sub) {
+  const l = state.listings.find(x => x.listing_id === sub);
+  if (!l) {
+    const convs = state.listings.filter(x => state.messages.some(m => m.channel === 'listing:' + x.listing_id && m.sender_id === me()));
+    return `<main><h2>שיחות</h2>${convs.length ? convs.map(x => `<a class="card row" href="#/seeker/chat/${x.listing_id}" style="text-decoration:none;color:inherit"><span class="grow"><b>${esc(x.title)}</b><br><span class="small muted">${esc(x.publisher_name)}</span></span>›</a>`).join('') : '<div class="card muted">עוד אין שיחות. בחרו מודעה בפיד ושאלו את הסוכן שלה.</div>'}</main>`;
+  }
+  const ch = 'listing:' + l.listing_id;
+  if (!state.messages.some(m => m.channel === ch)) pushMsg(ch, 'ai', `שלום! אני סוכן הסינון של "${l.title}". אפשר לשאול על מחיר, תאריך כניסה, שותפים, חיות מחמד ועוד.`);
+  return `<main><a href="#/seeker/feed" class="small" style="color:var(--brand)">→ חזרה לפיד</a><h2 style="margin:4px 0">${esc(l.title)}</h2><p class="small muted" style="margin:0 0 8px">מפרסם: ${esc(l.publisher_name)} · הסוכן עונה רק על מידע שפורסם מראש</p>
+    ${chatView(ch, { placeholder: 'שאלה על הדירה...', chips: ['כמה עולה?', 'מותר כלב?', 'מי השותפים?', 'אפשר הנחה במחיר?'] })}</main>`;
+}
+
+function viewSettings() {
+  const items = [['messages', 'הודעות חדשות', 'התראה מיידית על הודעה נכנסת בצ׳אט'], ['expense', 'הוצאה חדשה', 'כשנרשמת הוצאה בקבוצה המשותפת'], ['tasks', 'תזכורת משימות', 'בבוקר, ושוב בערב אם המשימה לא בוצעה'], ['monthly', 'סיכום כספי חודשי', 'מאזן הקיזוזים ב־31 בחודש'], ['match', 'התאמת דירה', 'כשנמצאת דירה שעונה על הקריטריונים']];
+  return `<main><h2>הגדרות התראות</h2>
+    <div class="card"><ul class="list">${items.map(([k, t, d]) => `<li class="spread"><label for="n_${k}" class="grow"><b>${t}</b><div class="small muted">${d}</div></label><label class="switch"><input id="n_${k}" type="checkbox" data-change="notif" data-k="${k}" ${state.notif[k] ? 'checked' : ''} aria-label="${t}"><span></span></label></li>`).join('')}</ul></div>
+    <div class="card"><h3>חשבון</h3><div class="grid2"><button class="btn line" data-act="logout">התנתקות</button><button class="btn danger" data-act="resetDemo">איפוס נתוני הדמה</button></div></div>
+    <a href="#/${state.session.role}/${TABS[state.session.role][0][0]}" class="btn ghost block" style="text-decoration:none;text-align:center">חזרה</a></main>`;
+}
+
+const VIEWS = {
+  'tenant/expenses': viewTenantExpenses, 'tenant/tasks': viewTenantTasks, 'tenant/issues': viewTenantIssues, 'tenant/chat': viewTenantChat, 'tenant/home': viewTenantHome,
+  'landlord/rent': viewLandlordRent, 'landlord/issues': viewLandlordIssues, 'landlord/bills': viewLandlordBills, 'landlord/chat': viewLandlordChat, 'landlord/contract': viewLandlordContract,
+  'seeker/prefs': viewSeekerPrefs, 'seeker/feed': viewSeekerFeed, 'seeker/chat': viewSeekerChat,
+};
+
+/* ---------- router ---------- */
+// The route lives in memory and is mirrored to the URL hash when the page allows it
+// (some previews, such as data: URLs, drop hash changes).
+let route = location.hash.replace(/^#\/?/, '');
+function go(path) {
+  route = path;
+  try { if (location.hash !== '#/' + path) history.replaceState(null, '', '#/' + path); } catch (e) {}
+  render();
+}
+function render() {
+  const s = state.session;
+  const parts = route.split('/');
+  let html;
+  if (!s.logged) { html = header() + viewLogin(); }
+  else if (!s.role) { html = header() + viewRole(); }
+  else if (parts[0] === 'settings') { html = header() + viewSettings(); }
+  else {
+    const role = s.role;
+    let tab = parts[0] === role ? parts[1] : null;
+    if (!VIEWS[role + '/' + tab]) { go(role + '/' + TABS[role][0][0]); return; }
+    html = header() + VIEWS[role + '/' + tab](parts[2]) + nav(role, tab);
+  }
+  const keepScroll = render.lastRoute === route ? window.scrollY : 0;
+  document.getElementById('app').innerHTML = html;
+  render.lastRoute = route;
+  window.scrollTo(0, keepScroll);
+  const log = document.getElementById('chatlog');
+  if (log) log.scrollTop = log.scrollHeight;
+}
+window.addEventListener('hashchange', () => { route = location.hash.replace(/^#\/?/, ''); render(); });
+
+/* ---------- actions ---------- */
+const DEFAULT_USER = { tenant: 't1', landlord: 'l1', seeker: 's1' };
+const ACTIONS = {
+  noop() {},
+  closeModal, closeModalBg(el, e) { if (e.target === el) closeModal(); },
+  pickRole(el) { const r = el.dataset.role; state.session.role = r; state.session.user_id = DEFAULT_USER[r]; save(); go(r + '/' + TABS[r][0][0]); },
+  snapshot() {
+    const b = balance();
+    openModal(`<h2>מצב ביניים</h2><p class="small muted">צפייה במאזן הנוכחי, בלי לאפס את החשבון.</p>
+      <ul class="list">${b.rows.map(r => `<li class="spread"><span>${esc(user(r.id).name)} <span class="small muted">שילם/ה ${money(r.paid)}</span></span><b class="${r.net >= 0 ? 'pos' : 'neg'}">${r.net >= 0 ? '+' : '−'}${money(Math.abs(r.net))}</b></li>`).join('')}</ul>
+      <h3 style="margin-top:12px">העברות נדרשות</h3>${transfersHtml(b.transfers)}<button class="btn block" style="margin-top:16px" data-act="closeModal">סגירה</button>`);
+  },
+  resetPeriod() {
+    const b = balance();
+    openModal(`<h2>איפוס מלא?</h2><p>המאזן הנוכחי ייסגר, יופק סיכום תשלומים ותיפתח תקופת קיזוז חדשה מהיום. אי אפשר לפתוח מחדש תקופה סגורה.</p>${transfersHtml(b.transfers)}
+      <div class="grid2" style="margin-top:16px"><button class="btn" data-act="confirmReset">סגירה ואיפוס</button><button class="btn line" data-act="closeModal">ביטול</button></div>`);
+  },
+  confirmReset() { closeModal(); closePeriod('reset'); render(); },
+  simulate31() { closePeriod('monthly'); render(); },
+  viewImg(el) { openModal(`<img src="${el.src}" alt="" style="width:100%;border-radius:12px"><button class="btn block" style="margin-top:12px" data-act="closeModal">סגירה</button>`); },
+  openContract() { openModal(`<h2>קובץ החוזה</h2><div class="note info">באב-טיפוס אין קובץ אמיתי. כאן יוצג קובץ ה-PDF החתום (contract_url), זמין לשוכרים ולמשכירה בלבד.</div><button class="btn block" data-act="closeModal">סגירה</button>`); },
+  taskMode(el) {
+    const m = el.dataset.mode; if (state.taskMode === m) return;
+    state.taskMode = m;
+    if (m === 'Free') state.tasks.forEach(t => { if (t.status === 'Pending') { t.assigned_to_user_id = null; t.mode = 'Free'; } });
+    save(); if (m === 'Auto') roundRobin(); else toast(null, 'המשימות הפתוחות שוחררו. כל אחד בוחר מה לקחת.', 'בחירה חופשית');
+    render();
+  },
+  roundRobin() { roundRobin(); render(); },
+  remind(el) { remind(el.dataset.when); },
+  toggleTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.status = t.status === 'Done' ? 'Pending' : 'Done'; save(); render(); },
+  claimTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.assigned_to_user_id = me(); save(); render(); },
+  releaseTask(el) { const t = state.tasks.find(x => x.task_id === el.dataset.id); t.assigned_to_user_id = null; save(); render(); },
+  chip(el) { const f = document.querySelector('form.chat-form'); if (f) { f.text.value = el.dataset.text; f.requestSubmit(); } },
+  approveExp(el) { const m = state.messages.find(x => x.message_id === el.dataset.id); if (m.status !== 'pending') return; m.status = 'approved'; addExpense({ ...m.data, date: iso(TODAY) }); pushMsg('internal', 'ai', `נרשם: ${money(m.data.amount)} ב${m.data.category}. המאזן עודכן.`); render(); },
+  cancelExp(el) { const m = state.messages.find(x => x.message_id === el.dataset.id); m.status = 'cancelled'; save(); render(); },
+  toggleRent(el) { const r = state.rent[el.dataset.month]; r[el.dataset.id] = r[el.dataset.id] === 'paid' ? 'pending' : 'paid'; save(); render(); },
+  toggleBill(el) { const b = state.bills.find(x => x.bill_id === el.dataset.id); b.status = b.status === 'paid' ? 'open' : 'paid'; save(); render(); },
+  logout() { state.session = { logged: false, role: null, user_id: null, name: '' }; save(); go('login'); },
+  resetDemo() { const n = state.session; state = seed(); state.session = n; save(); toast(null, 'נתוני הדמה שוחזרו.', 'איפוס'); render(); },
+};
+const FORMS = {
+  login(f, fd) { state.session.logged = true; state.session.name = (fd.get('name') || '').trim(); save(); go('role'); },
+  async expense(f, fd) {
+    const amount = parseFloat(fd.get('amount')); if (!(amount > 0)) return;
+    addExpense({ amount, category: fd.get('category'), description: fd.get('description').trim(), payer: fd.get('payer'), date: fd.get('date'), receipt: await readFile(fd.get('receipt')) });
+    render();
+  },
+  task(f, fd) { state.tasks.push({ task_id: newId('k'), apartment_id: apt().apartment_id, assigned_to_user_id: state.taskMode === 'Auto' ? tenants()[state.rrIndex++ % tenants().length].user_id : null, title: fd.get('title').trim(), due_date: fd.get('due') || iso(TODAY), status: 'Pending', mode: state.taskMode }); save(); render(); },
+  async issue(f, fd) {
+    state.issues.unshift({ issue_id: newId('i'), apartment_id: apt().apartment_id, reported_by_user_id: me(), title: fd.get('title').trim(), description: fd.get('description').trim(), image: await readFile(fd.get('image')), status: 'Open', receipt_url: null, date: iso(TODAY) });
+    save(); toast(null, 'הדיווח נשלח למשכירה ומופיע אצלה בלשונית התקלות.', 'תקלה דווחה'); render();
+  },
+  async bill(f, fd) {
+    state.bills.unshift({ bill_id: newId('b'), apartment_id: apt().apartment_id, title: fd.get('title').trim(), amount: parseFloat(fd.get('amount')), due_date: fd.get('due'), file: await readFile(fd.get('file')), status: 'open' });
+    save(); toast(null, 'החשבון מופיע אצל השוכרים בלשונית "הדירה".', 'החשבון הועלה'); render();
+  },
+  prefs(f, fd) {
+    state.prefs = { area: fd.get('area'), budget: parseFloat(fd.get('budget')) || 0, rooms: parseInt(fd.get('rooms')) || 1, entry: fd.get('entry'), type: fd.get('type'), hard: { noSmoking: !!fd.get('hard_noSmoking'), pets: !!fd.get('hard_pets'), parking: !!fd.get('hard_parking') } };
+    save();
+    const good = feed().shown.filter(x => x.s.total >= 80).length;
+    toast('match', good ? `נמצאו ${good} דירות עם התאמה של 80% ומעלה.` : 'אין כרגע דירות עם התאמה גבוהה. נעדכן כשתתפרסם אחת.', '🔔 התאמת דירה');
+    go('seeker/feed');
+  },
+  chat(f, fd) {
+    const text = (fd.get('text') || '').trim(); if (!text) return;
+    const ch = f.dataset.channel;
+    pushMsg(ch, me(), text);
+    if (ch === 'internal') {
+      const r = internalAgent(text);
+      if (r) pushMsg('internal', 'ai', r.content, r.kind === 'proposal' ? { kind: 'proposal', data: r.data, status: 'pending' } : {});
+    } else if (ch === 'landlord') {
+      toast('messages', `${user(me()).name}: ${text}`, state.session.role === 'landlord' ? '🔔 נשלחה התראה לשוכרים' : '🔔 נשלחה התראה למשכירה');
+    } else if (ch.startsWith('listing:') && state.session.role === 'seeker') {
+      const l = state.listings.find(x => 'listing:' + x.listing_id === ch);
+      const r = listingAgent(l, text);
+      setTimeout(() => { pushMsg(ch, 'ai', r.content, r.handoff ? { kind: 'handoff' } : {}); if (r.handoff) toast('messages', `שאלה ממועמד הועברה אל ${l.publisher_name}`, '🔔 הודעה חדשה למפרסם'); render(); }, 450);
+    }
+    render();
+    const input = document.querySelector('form.chat-form input'); if (input) input.focus();
+  },
+};
+const CHANGES = {
+  switchRole(el) { const r = el.value; state.session.role = r; state.session.user_id = DEFAULT_USER[r]; save(); go(r + '/' + TABS[r][0][0]); },
+  switchUser(el) { state.session.user_id = el.value; save(); render(); },
+  issueStatus(el) { const i = state.issues.find(x => x.issue_id === el.dataset.id); i.status = el.value; save(); toast(null, `"${i.title}" – ${ISSUE_STATUS[i.status][0]}. השוכרים רואים את העדכון.`, 'סטטוס עודכן'); render(); },
+  async issueReceipt(el) { const i = state.issues.find(x => x.issue_id === el.dataset.id); i.receipt_url = await readFile(el.files[0]); save(); render(); },
+  notif(el) { state.notif[el.dataset.k] = el.checked; save(); },
+};
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (a) { e.preventDefault(); go(a.getAttribute('href').slice(2)); window.scrollTo(0, 0); return; }
+  const el = e.target.closest('[data-act]'); if (el && ACTIONS[el.dataset.act]) ACTIONS[el.dataset.act](el, e); });
+document.addEventListener('submit', e => { const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form](f, new FormData(f)); });
+document.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && CHANGES[el.dataset.change]) CHANGES[el.dataset.change](el, e); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+render();
+</script>
+</body>
+</html>
